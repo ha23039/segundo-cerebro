@@ -4,7 +4,7 @@
 
 **Goal:** PWA instalable con login, tema, Ajustes y despliegue (F0), más hábitos con horario versionado, registro diario, panel Hoy y rachas (F1).
 
-**Architecture:** SPA estática (Vite + React) servida por Cloudflare Workers (static assets). Supabase es el único backend: Postgres con RLS en todas las tablas, RPCs `security invoker` para las operaciones que tocan varias filas, Auth con correo y contraseña. La lógica de fechas, horarios y rachas es TypeScript puro y testeado con Vitest. TanStack Query guarda la caché en IndexedDB para leer sin red.
+**Architecture:** SPA estática (Vite + React) servida por Cloudflare Workers (static assets). Supabase es el único backend: Postgres con RLS en todas las tablas, RPCs `security invoker` para las operaciones que tocan varias filas, Auth con correo y contraseña. La lógica de fechas, horarios y rachas es TypeScript puro y testeado con Vitest. TanStack Query guarda la caché en IndexedDB para leer sin red. **Esta sesión se ocupa solo del código y del repositorio;** el despliegue lo ejecuta el usuario desde su ordenador siguiendo `docs/despliegue.md`.
 
 **Tech Stack (versiones fijadas, verificadas el 2026-10-24):** vite 8.3.5 · react/react-dom 19.3.1 · typescript **6.0.3** (no 7.x: typescript-eslint 8.72.0 exige `<6.1.0`) · @vitejs/plugin-react 6.1.2 · react-router 8.5.0 · @supabase/supabase-js 2.118.0 · supabase (CLI, devDependency) 2.122.0 · @tanstack/react-query, react-query-persist-client, query-async-storage-persister 5.104.5 · idb-keyval 6.3.0 · zod 4.6.7 · vite-plugin-pwa 2.0.0 (+ workbox-window, @vite-pwa/assets-generator) · vitest 5.0.5 + jsdom 30.1.3 + @testing-library/react 16.3.3 · @playwright/test 1.64.1 · @axe-core/playwright 4.14.0 · eslint 10.13.0 + typescript-eslint 8.72.0 · wrangler 4.152.0. Sin librería de fechas: `Intl.DateTimeFormat` basta.
 
@@ -216,7 +216,7 @@ Rutas: `/login` (pública); dentro de `RequireAuth` + `AppShell`: `/` (Hoy), `/h
   - Al volver online, el aviso desaparece.
 - [ ] **Step 3:** Implementar → PASS. Commit `feat: PWA instalable con service worker y lectura sin conexión`.
 
-### Task 7: CI y configuración de despliegue
+### Task 7: CI y configuración de despliegue (sin desplegar)
 
 **Files:** Create `.github/workflows/ci.yml`, `wrangler.jsonc`, `scripts/write-headers.mjs`.
 
@@ -230,19 +230,24 @@ Rutas: `/login` (pública); dentro de `RequireAuth` + `AppShell`: `/` (Hoy), `/h
 - [ ] **Step 3:** El job `test` de `ci.yml` corre en `push` y `pull_request`, con Node 24, `npm ci`, `lint`, `typecheck`, `check:colors`, `test` y `build`. Después, `supabase/setup-cli` con la versión fijada, `supabase start`, `supabase test db`, `npx playwright install --with-deps` y `npm run e2e`. Si Playwright falla, el reporte se sube como artifact.
 - [ ] **Step 4:** Rama `feat/f0`, push y PR. Verificar `gh run watch` → verde. Commit `ci: lint, tipos, tests unitarios, pgTAP y E2E en GitHub Actions`.
 
-### Task 8: Producción (Supabase Cloud + Cloudflare)
+### Task 8: Paquete de despliegue (lo ejecuta el usuario desde su ordenador)
 
-**Necesita al usuario:** `npx supabase login` y `npx wrangler login` (o tokens con alcance limitado), ejecutados por él con `!` en la sesión. Su correo para la cuenta. La contraseña la escribe él con `scripts/create-user.mjs`, que la pide por consola sin eco; nunca pasa por el chat.
+**Alcance de esta sesión:** código y repositorio. El despliegue lo hace el usuario en su máquina; aquí no se crean proyectos en la nube ni se usan tokens de Supabase o Cloudflare.
 
-- [ ] **Step 1:** `npx supabase projects create segundo-cerebro --region eu-west-3` (París, la región más cercana a Madrid) con una contraseña de BD generada que se guarda en GitHub Secrets. Después `supabase link`, `supabase db push` y `supabase config push`, para que los registros desactivados también apliquen en la nube.
-- [ ] **Step 2:** En el repo: Secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) y Variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). Job `deploy` en `ci.yml`: solo en `main` y con `needs: test`; ejecuta `supabase db push` y luego `npm run build && npx wrangler deploy`.
-- [ ] **Step 3:** El usuario ejecuta `! node scripts/create-user.mjs` para crear su cuenta.
-- [ ] **Step 4: Verificación real** con Playwright contra la URL de producción:
-  - Login con una cuenta temporal de prueba creada y borrada por el script con la secret key.
-  - Recargar y comprobar que la sesión sigue.
-  - Revisar las cabeceras (CSP presente).
-  - Comprobar que un `POST /auth/v1/signup` con la publishable key es rechazado.
-- [ ] **Step 5:** Merge del PR de F0. **Reporte de fase F0** al usuario: implementado / probado / errores corregidos / pendiente, con la URL.
+**Files:** Create `docs/despliegue.md`, `scripts/create-user.mjs`, `scripts/smoke-prod.mjs`; Modify `README.md` (enlace a la guía).
+
+- [ ] **Step 1:** `scripts/create-user.mjs` lee `SUPABASE_URL` y `SUPABASE_SECRET_KEY` del entorno, pide el correo y luego la contraseña por consola sin eco (mínimo 12 caracteres, la pide dos veces) y crea el usuario con `auth.admin.createUser({ email_confirm: true })`. Probarlo contra Supabase local: crea el usuario y el login funciona en la app.
+- [ ] **Step 2:** `scripts/smoke-prod.mjs <url-app> <url-supabase> <publishable-key>` comprueba, sin credenciales, que la app responde 200, que `dist/_headers` se aplicó (cabecera CSP presente), que `/manifest.webmanifest` es válido y que `POST /auth/v1/signup` es rechazado. Probarlo contra `npm run preview` y Supabase local, donde `signup` también debe estar rechazado.
+- [ ] **Step 3:** `docs/despliegue.md`, guía paso a paso con comandos copiables:
+  1. Requisitos: Node 24 y `npm ci`; para desplegar no hace falta Docker.
+  2. Supabase: `npx supabase login`, `npx supabase projects create segundo-cerebro --region eu-west-3`, `npx supabase link`, `npx supabase db push`, `npx supabase config push` (aplica los registros desactivados) y cómo obtener la URL y la publishable key.
+  3. Crear la cuenta: `node scripts/create-user.mjs`.
+  4. Cloudflare: `npx wrangler login`, crear `.env.production.local` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`, `npm run build` y `npx wrangler deploy`.
+  5. Ajustar `site_url` del proyecto de Supabase a la URL de Cloudflare.
+  6. Verificar: `node scripts/smoke-prod.mjs …`, login desde el iPhone y "Añadir a pantalla de inicio".
+  7. Cada nueva fase: `git pull`, `npx supabase db push`, `npm run build`, `npx wrangler deploy`.
+  8. Qué no subir nunca al repo: `.env*.local`, la secret key y la contraseña de la BD.
+- [ ] **Step 4:** Merge del PR de F0. **Reporte de fase F0** al usuario: implementado / probado / errores corregidos / pendiente, y qué tiene que ejecutar en casa.
 
 ---
 
@@ -428,5 +433,5 @@ Comportamiento:
 ### Task 15: Cierre de F1
 
 - [ ] **Step 1:** Ejecutar la suite completa en local (`lint`, `typecheck`, `check:colors`, `test`, `supabase test db`, `e2e`) y en CI, y adjuntar los resultados.
-- [ ] **Step 2:** Merge y despliegue. Verificar en producción con Playwright: crear un hábito, marcarlo, recargar y comprobar que persiste. Después borrarlo y vaciarlo.
+- [ ] **Step 2:** Merge a `main`. Actualizar `docs/despliegue.md` si la fase añadió algún paso (por ejemplo, la extensión `pg_cron`). La verificación en producción la hace el usuario con `scripts/smoke-prod.mjs` y su iPhone.
 - [ ] **Step 3:** **Reporte de fase F1:** implementado / probado / errores corregidos / pendiente.
