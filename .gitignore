@@ -33,3 +33,7 @@ supabase/.branches/
 test-results/
 playwright-report/
 coverage/
+
+# Estado local de herramientas
+.wrangler/
+.claude/

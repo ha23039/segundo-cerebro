@@ -1,0 +1,136 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  margin-bottom: var(--gap);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.habit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.habit-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.habit-card-info {
+  min-width: 0;
+}
+
+.habit-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.habit-card p {
+  margin: 4px 0 0;
+}
+
+.habit-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.habit-card-actions .btn {
+  padding: 8px 12px;
+}
+
+.icon-btn {
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.empty {
+  padding: 24px 0;
+  color: var(--muted);
+}
+
+.field-error {
+  margin: 4px 0 0;
+}
+
+.hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.two-cols {
+  align-items: flex-start;
+}
+
+.two-cols > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(40px, 1fr));
+  gap: 6px;
+}
+
+.weekday {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.weekday input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.weekday:has(input:checked) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.weekday:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.trash-item p {
+  margin: 4px 0 0;
+}
+
+.trash-name {
+  overflow-wrap: anywhere;
+}

@@ -3,7 +3,15 @@ import { QueryClient } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
 
 const CACHE_KEY = 'segundo-cerebro-cache'
-export const CACHE_MAX_AGE = 30 * 24 * 60 * 60 * 1000
+// Sube este número si cambia la forma de los datos en caché: invalida las copias guardadas.
+export const CACHE_VERSION = 2
+
+export function cacheBuster(userId: string): string {
+  return `${userId}:${CACHE_VERSION}`
+}
+
+// 7 días de lectura sin conexión. Debe caber en un setTimeout (≤ 24,8 días) porque se usa como gcTime.
+export const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
 
 // Se desactiva al cerrar sesión para que una escritura pendiente no deje datos en el dispositivo.
 let persistEnabled = false

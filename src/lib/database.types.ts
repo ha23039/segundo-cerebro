@@ -23,7 +23,61 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "habit_logs": {
+                  Row: {
+                    "date": string,"habit_id": string,"updated_at": string,"user_id": string,"value": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "date": string,"habit_id": string,"updated_at"?: string,"user_id"?: string,"value": number
+                  }
+                  Update: {
+                    "date"?: string,"habit_id"?: string,"updated_at"?: string,"user_id"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "habit_logs_habit_id_user_id_fkey"
+      columns: ["habit_id","user_id"]
+isOneToOne: false
+      referencedRelation: "habits"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
+                },"habit_schedules": {
+                  Row: {
+                    "days": (number)[] | null,"frequency": string,"habit_id": string,"id": string,"target": number | null,"times_per_week": number | null,"user_id": string,"valid_from": string,"valid_to": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "days"?: (number)[] | null,"frequency": string,"habit_id": string,"id"?: string,"target"?: number | null,"times_per_week"?: number | null,"user_id"?: string,"valid_from": string,"valid_to"?: string | null
+                  }
+                  Update: {
+                    "days"?: (number)[] | null,"frequency"?: string,"habit_id"?: string,"id"?: string,"target"?: number | null,"times_per_week"?: number | null,"user_id"?: string,"valid_from"?: string,"valid_to"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "habit_schedules_habit_id_user_id_fkey"
+      columns: ["habit_id","user_id"]
+isOneToOne: false
+      referencedRelation: "habits"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
+                },"habits": {
+                  Row: {
+                    "archived_at": string | null,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"frequency": string,"id": string,"kind": string,"name": string,"position": number,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "archived_at"?: string | null,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency": string,"id"?: string,"kind": string,"name": string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "archived_at"?: string | null,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency"?: string,"id"?: string,"kind"?: string,"name"?: string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
                   Row: {
                     "timezone": string,"updated_at": string,"user_id": string
                   }
@@ -43,7 +97,21 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "archive_habit":
+{ Args: { "p_habit_id": string }; Returns: undefined
+                           },
+"create_habit":
+{ Args: { "p_days": (number)[],"p_frequency": string,"p_kind": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: string
+                           },
+"move_habit":
+{ Args: { "p_direction": string,"p_habit_id": string }; Returns: undefined
+                           },
+"unarchive_habit":
+{ Args: { "p_habit_id": string }; Returns: undefined
+                           },
+"update_habit":
+{ Args: { "p_days": (number)[],"p_frequency": string,"p_habit_id": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never

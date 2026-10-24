@@ -22,3 +22,12 @@ test('error desconocido', () => {
   expect(toMessage(new Error('boom'))).toBe('Algo salió mal, inténtalo de nuevo')
   expect(toMessage(null)).toBe('Algo salió mal, inténtalo de nuevo')
 })
+
+test('fallo de red devuelto por PostgREST como objeto de error', () => {
+  expect(toMessage({ code: '', message: 'TypeError: Failed to fetch', details: '', hint: '' })).toBe(
+    'Sin conexión. Inténtalo cuando vuelvas a tener red.',
+  )
+  expect(toMessage({ code: '', message: 'TypeError: Load failed', details: '', hint: '' })).toBe(
+    'Sin conexión. Inténtalo cuando vuelvas a tener red.',
+  )
+})
