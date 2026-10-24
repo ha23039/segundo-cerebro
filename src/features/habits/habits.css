@@ -119,3 +119,18 @@
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.trash-item p {
+  margin: 4px 0 0;
+}
+
+.trash-name {
+  overflow-wrap: anywhere;
+}

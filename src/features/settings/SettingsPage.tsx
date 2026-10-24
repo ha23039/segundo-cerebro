@@ -6,6 +6,8 @@ import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
 import { useUpdateTimezone } from '../profile/useUpdateTimezone'
+import { TrashSection } from './TrashSection'
+import '../habits/habits.css'
 
 const PALETTES: { value: Palette; label: string }[] = [
   { value: 'indigo', label: 'Índigo' },
@@ -101,6 +103,8 @@ export function SettingsPage() {
           </p>
         )}
       </section>
+
+      <TrashSection />
 
       <section className="stack" aria-labelledby="cuenta">
         <h2 id="cuenta">Cuenta</h2>
