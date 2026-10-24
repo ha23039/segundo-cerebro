@@ -97,7 +97,21 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "archive_habit":
+{ Args: { "p_habit_id": string }; Returns: undefined
+                           },
+"create_habit":
+{ Args: { "p_days": (number)[],"p_frequency": string,"p_kind": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: string
+                           },
+"move_habit":
+{ Args: { "p_direction": string,"p_habit_id": string }; Returns: undefined
+                           },
+"unarchive_habit":
+{ Args: { "p_habit_id": string }; Returns: undefined
+                           },
+"update_habit":
+{ Args: { "p_days": (number)[],"p_frequency": string,"p_habit_id": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never
