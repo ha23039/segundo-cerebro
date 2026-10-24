@@ -126,3 +126,58 @@ test('Hoy sin violaciones de accesibilidad', async ({ page }) => {
   await expect(row(page, 'Agua')).toBeVisible()
   await expectNoA11yViolations(page)
 })
+
+test('sin red al día siguiente y con el token caducado sigue mostrando los datos', async ({ page, context }) => {
+  await seedHabit(user, { name: 'Leer' }, 3)
+  await login(page, user)
+  await row(page, 'Leer').getByRole('button', { name: 'Leer' }).click()
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => true))
+  await page.waitForTimeout(1500)
+  await context.setOffline(true)
+  // Mañana a las 08:00 en Madrid: el token (1 h) ha caducado y no se puede refrescar
+  const tomorrow8 = new Date(lastMadridMidnight().getTime() + 32 * 3_600_000)
+  await page.clock.install({ time: tomorrow8 })
+  await page.reload()
+  await expect(page).not.toHaveURL(/\/login$/)
+  const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
+  await expect(toggle).toBeVisible()
+  await expect(toggle).toBeDisabled()
+  await expect(page.getByText('Sin conexión: solo lectura')).toBeVisible()
+  await context.setOffline(false)
+})
+
+test('marcar no vuelve a descargar los registros', async ({ page }) => {
+  await seedHabit(user, { name: 'Leer' })
+  await login(page, user)
+  await expect(row(page, 'Leer')).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  let logReads = 0
+  page.on('request', (r) => {
+    if (r.method() === 'GET' && r.url().includes('/rest/v1/habit_logs')) logReads++
+  })
+  const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
+  await toggle.click()
+  await toggle.click()
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await page.waitForLoadState('networkidle')
+  expect(logReads).toBe(0)
+})
+
+test('si fallan dos toques encadenados, queda el último estado confirmado', async ({ page }) => {
+  await seedHabit(user, { name: 'Leer' })
+  await login(page, user)
+  const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  // Las escrituras tardan y fallan; las lecturas también fallan para que no se corrija sola
+  await page.route('**/rest/v1/habit_logs*', async (route) => {
+    await new Promise((r) => setTimeout(r, 300))
+    await route.abort()
+  })
+  await toggle.click() // marcar
+  await toggle.click() // desmarcar
+  await toggle.click() // marcar
+  await expect(page.getByRole('alert')).toBeVisible()
+  await page.waitForTimeout(1500)
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+})

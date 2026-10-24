@@ -24,7 +24,7 @@ export function TodayPage() {
   const active = habits.data?.filter((h) => !h.archivedAt) ?? []
   // Las rachas necesitan los registros desde el primer periodo de cada hábito
   const from = active.flatMap((h) => h.schedules.map((s) => s.validFrom)).sort()[0] ?? addDays(today, -7)
-  const logs = useLogs(from, today)
+  const logs = useLogs(from, habits.isSuccess)
   const setLog = useSetLog()
 
   const due = active.filter((h) => isDueOn(h, logs.data?.get(h.id) ?? EMPTY, date))

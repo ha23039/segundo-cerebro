@@ -55,15 +55,14 @@ export async function fetchDeletedHabits(): Promise<(Habit & { deletedAt: string
   return data.map((r) => ({ ...toHabit(r), deletedAt: r.deleted_at! }))
 }
 
-/** Registros entre dos fechas, agrupados por hábito. Pagina porque PostgREST limita a 1000 filas. */
-export async function fetchLogs(from: IsoDate, to: IsoDate): Promise<LogsRecord> {
+/** Registros desde una fecha (no hay futuros), agrupados por hábito. Pagina porque PostgREST limita a 1000 filas. */
+export async function fetchLogs(from: IsoDate): Promise<LogsRecord> {
   const out: LogsRecord = {}
   for (let offset = 0; ; offset += PAGE) {
     const { data, error } = await supabase
       .from('habit_logs')
       .select('habit_id, date, value')
       .gte('date', from)
-      .lte('date', to)
       .order('date')
       .order('habit_id')
       .range(offset, offset + PAGE - 1)
