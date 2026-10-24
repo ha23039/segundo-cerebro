@@ -1,0 +1,18 @@
+/* Tokens añadidos a los de tokens.css (que no se modifica). Misma estructura de selectores. */
+
+/* ---- Claro ---- */
+:root {
+  --danger: #b91c1c;
+}
+
+/* ---- Oscuro por preferencia del sistema ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --danger: #f87171;
+  }
+}
+
+/* ---- Oscuro por elección explícita ---- */
+:root[data-theme="dark"] {
+  --danger: #f87171;
+}

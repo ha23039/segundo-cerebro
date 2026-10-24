@@ -1,0 +1,35 @@
+/* Tokens de color: 2 paletas (indigo, oceano) x 2 modos (claro, oscuro).
+   Atributos en <html>:  data-palette="indigo|oceano"   data-theme="light|dark" (sin data-theme = sigue al sistema) */
+
+/* ---- Claro ---- */
+:root, :root[data-palette="indigo"] {
+  --bg:#f5f6f8; --surface:#ffffff; --text:#141821; --muted:#5b6473; --border:#e1e4ea;
+  --primary:#4f46e5; --on-primary:#ffffff; --ok:#16a34a;
+  color-scheme: light;
+}
+:root[data-palette="oceano"] {
+  --bg:#f2f7f7; --surface:#ffffff; --text:#0f1f22; --muted:#53686b; --border:#d9e5e6;
+  --primary:#0f766e; --on-primary:#ffffff; --ok:#15803d;
+}
+
+/* ---- Oscuro por preferencia del sistema ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0d1017; --surface:#161a22; --text:#e9ecf2; --muted:#9aa4b5; --border:#272d39;
+    --primary:#8b8cf9; --on-primary:#0d1017; --ok:#4ade80; color-scheme: dark;
+  }
+  :root:not([data-theme="light"])[data-palette="oceano"] {
+    --bg:#081214; --surface:#0f1d20; --text:#e4f1f1; --muted:#8fa9ab; --border:#1d3235;
+    --primary:#2dd4bf; --on-primary:#06201d; --ok:#4ade80;
+  }
+}
+
+/* ---- Oscuro por elección explícita ---- */
+:root[data-theme="dark"] {
+  --bg:#0d1017; --surface:#161a22; --text:#e9ecf2; --muted:#9aa4b5; --border:#272d39;
+  --primary:#8b8cf9; --on-primary:#0d1017; --ok:#4ade80; color-scheme: dark;
+}
+:root[data-theme="dark"][data-palette="oceano"] {
+  --bg:#081214; --surface:#0f1d20; --text:#e4f1f1; --muted:#8fa9ab; --border:#1d3235;
+  --primary:#2dd4bf; --on-primary:#06201d; --ok:#4ade80;
+}
