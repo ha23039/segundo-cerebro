@@ -1,7 +1,8 @@
 import type { IsoDate, Weekday } from '../../lib/dates'
 import type { Database } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
-import type { Frequency, Habit, LogsByDate, SchedulePeriod } from './domain/types'
+import type { Frequency, Habit, SchedulePeriod } from './domain/types'
+import type { LogsRecord } from './logsCache'
 import type { HabitInput } from './schema'
 
 type HabitRow = Database['public']['Tables']['habits']['Row']
@@ -55,8 +56,8 @@ export async function fetchDeletedHabits(): Promise<(Habit & { deletedAt: string
 }
 
 /** Registros entre dos fechas, agrupados por hábito. Pagina porque PostgREST limita a 1000 filas. */
-export async function fetchLogs(from: IsoDate, to: IsoDate): Promise<Map<string, LogsByDate>> {
-  const out = new Map<string, LogsByDate>()
+export async function fetchLogs(from: IsoDate, to: IsoDate): Promise<LogsRecord> {
+  const out: LogsRecord = {}
   for (let offset = 0; ; offset += PAGE) {
     const { data, error } = await supabase
       .from('habit_logs')
@@ -67,11 +68,7 @@ export async function fetchLogs(from: IsoDate, to: IsoDate): Promise<Map<string,
       .order('habit_id')
       .range(offset, offset + PAGE - 1)
     if (error) throw error
-    for (const row of data) {
-      let logs = out.get(row.habit_id)
-      if (!logs) out.set(row.habit_id, (logs = new Map()))
-      logs.set(row.date, row.value)
-    }
+    for (const row of data) (out[row.habit_id] ??= {})[row.date] = row.value
     if (data.length < PAGE) return out
   }
 }
