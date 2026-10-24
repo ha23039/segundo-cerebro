@@ -4,6 +4,7 @@ import { AuthProvider } from './features/auth/AuthProvider'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { useAuth } from './features/auth/useAuth'
+import { HabitEditPage } from './features/habits/HabitEditPage'
 import { HabitsPage } from './features/habits/HabitsPage'
 import { AppShell } from './features/layout/AppShell'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -21,6 +22,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <TodayPage /> },
       { path: 'habitos', element: <HabitsPage /> },
+      { path: 'habitos/nuevo', element: <HabitEditPage /> },
+      { path: 'habitos/:id/editar', element: <HabitEditPage /> },
       { path: 'ajustes', element: <SettingsPage /> },
     ],
   },

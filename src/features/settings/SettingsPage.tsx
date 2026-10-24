@@ -6,7 +6,6 @@ import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
 import { useUpdateTimezone } from '../profile/useUpdateTimezone'
-import './settings.css'
 
 const PALETTES: { value: Palette; label: string }[] = [
   { value: 'indigo', label: 'Índigo' },
