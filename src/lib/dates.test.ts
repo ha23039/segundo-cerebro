@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { addDays, daysBetween, isValidTimeZone, isoWeekday, startOfWeek, todayIn } from './dates'
+import { addDays, daysBetween, formatLongDate, isValidTimeZone, isoWeekday, startOfWeek, todayIn } from './dates'
 
 describe('todayIn', () => {
   test('cambia de día a medianoche de Madrid en horario de verano', () => {
@@ -45,4 +45,8 @@ describe('aritmética de calendario', () => {
 test('isValidTimeZone', () => {
   expect(isValidTimeZone('Europe/Madrid')).toBe(true)
   expect(isValidTimeZone('Marte/Olympus')).toBe(false)
+})
+
+test('formatLongDate en español', () => {
+  expect(formatLongDate('2026-10-25')).toBe('domingo, 25 de octubre')
 })

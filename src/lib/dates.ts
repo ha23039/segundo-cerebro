@@ -51,3 +51,13 @@ export function isValidTimeZone(tz: string): boolean {
     return false
   }
 }
+
+/** 'domingo, 25 de octubre' */
+export function formatLongDate(date: IsoDate): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(toUtcMs(date)))
+}
