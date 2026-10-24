@@ -1,39 +1,39 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
+# Dependencias y builds
 node_modules
 dist
 dist-ssr
-*.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Proyecto
+# Secretos y entornos (solo .env.example va al repo)
 .env
 .env.*
 !.env.example
-.superpowers/
-supabase/.temp/
-supabase/.branches/
-test-results/
-playwright-report/
-coverage/
+*.local
+*.pem
+*.key
+signing_keys.json
 
 # Estado local de herramientas
 .wrangler/
 .claude/
+.superpowers/
+supabase/.temp/
+supabase/.branches/
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Tests y reportes
+test-results/
+playwright-report/
+coverage/
+
+# Logs y sistema
+logs
+*.log
+npm-debug.log*
+.DS_Store
+*.suo
+*.sw?
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

@@ -15,7 +15,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "check:colors": "node scripts/check-no-literal-colors.mjs",
-    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts"
+    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
+    "check:tracked": "node scripts/check-tracked.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
