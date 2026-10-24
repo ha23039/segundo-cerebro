@@ -9,7 +9,9 @@ export function toMessage(e: unknown): string {
     if (e.code === 'invalid_credentials') return 'Correo o contraseña incorrectos'
     return GENERIC
   }
-  if (e instanceof TypeError && /fetch|network|load failed/i.test(e.message)) {
+  // Fallo de red: TypeError del navegador o el mismo error envuelto por PostgREST
+  const message = e && typeof e === 'object' && 'message' in e ? String((e as { message: unknown }).message) : ''
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(message)) {
     return 'Sin conexión. Inténtalo cuando vuelvas a tener red.'
   }
   if (e && typeof e === 'object' && 'code' in e) {

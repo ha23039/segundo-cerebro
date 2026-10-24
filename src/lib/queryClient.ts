@@ -3,7 +3,8 @@ import { QueryClient } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
 
 const CACHE_KEY = 'segundo-cerebro-cache'
-export const CACHE_MAX_AGE = 30 * 24 * 60 * 60 * 1000
+// 7 días de lectura sin conexión. Debe caber en un setTimeout (≤ 24,8 días) porque se usa como gcTime.
+export const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
 
 // Se desactiva al cerrar sesión para que una escritura pendiente no deje datos en el dispositivo.
 let persistEnabled = false
@@ -33,3 +34,4 @@ export async function clearPersistedCache(): Promise<void> {
   queryClient.clear()
   await del(CACHE_KEY)
 }
+(window as unknown as { __qc: QueryClient }).__qc = queryClient // DEBUG-TEMP
