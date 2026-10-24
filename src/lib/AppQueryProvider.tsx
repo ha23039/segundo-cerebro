@@ -16,6 +16,9 @@ export function AppQueryProvider({ userId, children }: { userId: string | null; 
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister, maxAge: CACHE_MAX_AGE, buster: userId }}
+      // Lo restaurado puede ser anterior al último cambio (la escritura va con retardo):
+      // con red se refresca todo; sin red se queda lo restaurado.
+      onSuccess={() => queryClient.invalidateQueries()}
     >
       {children}
     </PersistQueryClientProvider>
