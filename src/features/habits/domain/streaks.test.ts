@@ -101,6 +101,13 @@ describe('racha semanal', () => {
     expect(currentStreak(h, l, TODAY)?.value).toBe(2)
   })
 
+  test('un periodo que empieza y termina dentro de la misma semana la hace parcial', () => {
+    // Desarchivado el martes 13 y archivado el viernes 16: esa semana no debe romper la racha
+    const h = habit([semanal('2026-09-28', 2, '2026-10-11'), semanal('2026-10-13', 2, '2026-10-16'), semanal('2026-10-19', 2)])
+    const l = logs(['2026-09-28', '2026-09-29', '2026-10-05', '2026-10-06', '2026-10-19', '2026-10-20'])
+    expect(currentStreak(h, l, TODAY)?.value).toBe(3)
+  })
+
   test('semanas que cruzan el año', () => {
     const h = habit([semanal('2026-12-14', 2)])
     const l = logs(['2026-12-14', '2026-12-16', '2026-12-21', '2026-12-22', '2026-12-29', '2027-01-02'])

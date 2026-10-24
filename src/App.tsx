@@ -7,18 +7,20 @@ import { useAuth } from './features/auth/useAuth'
 import { HabitEditPage } from './features/habits/HabitEditPage'
 import { HabitsPage } from './features/habits/HabitsPage'
 import { AppShell } from './features/layout/AppShell'
+import { RouteErrorView } from './features/layout/RouteError'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TodayPage } from './features/today/TodayPage'
 import { AppQueryProvider } from './lib/AppQueryProvider'
 
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteErrorView /> },
   {
     element: (
       <RequireAuth>
         <AppShell />
       </RequireAuth>
     ),
+    errorElement: <RouteErrorView />,
     children: [
       { index: true, element: <TodayPage /> },
       { path: 'habitos', element: <HabitsPage /> },

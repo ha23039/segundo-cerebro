@@ -46,8 +46,10 @@ export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate): Strea
     if (!ref) continue // semana entera sin periodo
     if (ref.frequency.kind !== 'semanal') break
     const met = weekDoneCount(h, logs, w) >= ref.frequency.timesPerWeek
-    // Parcial: algún límite de periodo cae dentro de la semana
-    const partial = periodAt(h, w) !== periodAt(h, sunday)
+    // Parcial: algún periodo empieza después del lunes o termina antes del domingo
+    const partial = h.schedules.some(
+      (p) => (p.validFrom > w && p.validFrom <= sunday) || (p.validTo !== null && p.validTo >= w && p.validTo < sunday),
+    )
     if (met) value++
     else if (w !== thisWeek && !partial) break
   }
