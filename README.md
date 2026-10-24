@@ -20,3 +20,7 @@ npm run lint && npm run typecheck && npm run check:colors && npm test
 npx supabase test db        # tests de base de datos (pgTAP, RLS)
 npm run e2e                 # Playwright + axe
 ```
+
+## Despliegue
+
+Supabase Cloud + Cloudflare, paso a paso: [`docs/despliegue.md`](docs/despliegue.md).
