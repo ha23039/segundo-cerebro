@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "segundo-cerebro",
+  "compatibility_date": "2026-10-24",
+  // Sitio estático: dist/ servido por Workers Static Assets, con fallback de SPA
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
