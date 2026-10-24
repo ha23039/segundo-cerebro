@@ -93,7 +93,12 @@ npm run build && npx wrangler deploy
 node scripts/smoke-prod.mjs …          # mismos argumentos que en el paso 5
 ```
 
-Al cerrar cada fase te indicaré si hay pasos extra (por ejemplo, activar una extensión).
+Al cerrar cada fase te indicaré si hay pasos extra.
+
+| Fase | Pasos extra |
+|---|---|
+| F0 | Despliegue inicial completo (pasos 1 a 5). |
+| F1 | Ninguno: `db push` activa solo las extensiones `btree_gist` y `pg_cron` y programa la purga diaria de la papelera (03:15 UTC). Puedes comprobarla en el panel → **Integrations → Cron**. |
 
 ## Problemas frecuentes
 
