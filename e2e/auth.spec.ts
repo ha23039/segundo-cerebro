@@ -39,7 +39,7 @@ test('cerrar sesión vuelve a /login y borra la caché local', async ({ page }) 
         req.onsuccess = () => {
           const db = req.result
           if (!db.objectStoreNames.contains('keyval')) return resolve(undefined)
-          const get = db.transaction('keyval').objectStore('keyval').get('segundo-cerebro-cache')
+          const get = db.transaction('keyval').objectStore('keyval').get('second-brain-cache')
           get.onsuccess = () => resolve(get.result)
         }
         req.onerror = () => resolve(undefined)

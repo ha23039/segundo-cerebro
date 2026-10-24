@@ -21,7 +21,7 @@ npm ci
 ```bash
 npx supabase login                     # abre el navegador
 npx supabase orgs list                 # copia el ID de tu organización
-npx supabase projects create segundo-cerebro \
+npx supabase projects create second-brain \
   --org-id <ORG_ID> \
   --region eu-west-3                   # París, la más cercana a Madrid
 ```
@@ -64,13 +64,13 @@ EOF
 
 npx wrangler login                     # abre el navegador
 npm run build                          # genera dist/ y dist/_headers (CSP con tu URL de Supabase)
-npx wrangler deploy                    # publica en https://segundo-cerebro.<tu-subdominio>.workers.dev
+npx wrangler deploy                    # publica en https://second-brain.<tu-subdominio>.workers.dev
 ```
 
 ## 5. Verificar
 
 ```bash
-node scripts/smoke-prod.mjs https://segundo-cerebro.<subdominio>.workers.dev \
+node scripts/smoke-prod.mjs https://second-brain.<subdominio>.workers.dev \
   https://<REF>.supabase.co <publishable key>
 ```
 

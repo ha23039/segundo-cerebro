@@ -2,7 +2,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { QueryClient } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
 
-const CACHE_KEY = 'segundo-cerebro-cache'
+const CACHE_KEY = 'second-brain-cache'
 // Sube este número si cambia la forma de los datos en caché: invalida las copias guardadas.
 export const CACHE_VERSION = 2
 
