@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { toMessage } from '../../lib/errors'
 import { useOnline } from '../layout/useOnline'
+import { areaLabel } from './domain/areas'
 import { frequencySummary } from './domain/format'
 import type { Habit } from './domain/types'
 import { useHabitMutations, useHabits } from './hooks'
@@ -25,6 +26,10 @@ function HabitCard({
     <li className="card habit-card">
       <div className="habit-card-info">
         <h3>{habit.name}</h3>
+        <p className="area-tag">
+          <span className={`area-dot area-${habit.area}`} aria-hidden="true" />
+          {areaLabel(habit.area)}
+        </p>
         <p className="muted">
           {frequencySummary(habit.template.frequency)}
           {habit.kind === 'cantidad' && ` · ${habit.template.target} ${habit.unit}`}

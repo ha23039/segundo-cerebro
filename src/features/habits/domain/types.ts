@@ -1,4 +1,5 @@
 import type { IsoDate, Weekday } from '../../../lib/dates'
+import type { AreaId } from './areas'
 
 export type Frequency = { kind: 'dias'; days: Weekday[] } | { kind: 'semanal'; timesPerWeek: number }
 
@@ -15,6 +16,7 @@ export interface Habit {
   name: string
   kind: 'check' | 'cantidad'
   unit: string | null
+  area: AreaId
   position: number
   /** Configuración actual (la que se usa al desarchivar). */
   template: { frequency: Frequency; target: number | null }

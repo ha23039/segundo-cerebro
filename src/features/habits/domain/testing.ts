@@ -16,6 +16,7 @@ export function habit(schedules: SchedulePeriod[], extra: Partial<Habit> = {}): 
     name: 'Hábito',
     kind: 'check',
     unit: null,
+    area: 'desarrollo',
     position: 1,
     template: { frequency: last.frequency, target: last.target },
     schedules,

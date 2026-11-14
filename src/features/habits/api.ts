@@ -1,6 +1,7 @@
 import type { IsoDate, Weekday } from '../../lib/dates'
 import type { Database } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
+import { DEFAULT_AREA, isAreaId } from './domain/areas'
 import type { Frequency, Habit, SchedulePeriod } from './domain/types'
 import type { LogsRecord } from './logsCache'
 import type { HabitInput } from './schema'
@@ -26,6 +27,7 @@ function toHabit(r: HabitRow & { habit_schedules: ScheduleRow[] }): Habit {
     name: r.name,
     kind: r.kind === 'cantidad' ? 'cantidad' : 'check',
     unit: r.unit,
+    area: isAreaId(r.area) ? r.area : DEFAULT_AREA,
     position: r.position,
     template: { frequency: toFrequency(r), target: r.target },
     schedules: r.habit_schedules.map(toPeriod).sort((a, b) => a.validFrom.localeCompare(b.validFrom)),
@@ -80,6 +82,7 @@ function rpcArgs(i: HabitInput) {
     p_days: i.frequency.kind === 'dias' ? i.frequency.days : null,
     p_times_per_week: i.frequency.kind === 'semanal' ? i.frequency.timesPerWeek : null,
     p_target: i.kind === 'cantidad' ? i.target! : null,
+    p_area: i.area,
   }
 }
 

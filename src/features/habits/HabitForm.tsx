@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { Weekday } from '../../lib/dates'
+import { AREAS, DEFAULT_AREA, type AreaId } from './domain/areas'
 import { WEEKDAYS } from './domain/format'
 import type { Habit } from './domain/types'
 import { validateHabit, type HabitErrors, type HabitInput } from './schema'
@@ -25,6 +26,7 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
   const freq = initial?.template.frequency
   const [name, setName] = useState(initial?.name ?? '')
   const [kind, setKind] = useState<'check' | 'cantidad'>(initial?.kind ?? 'check')
+  const [area, setArea] = useState<AreaId>(initial?.area ?? DEFAULT_AREA)
   const [unit, setUnit] = useState(initial?.unit ?? '')
   const [target, setTarget] = useState(initial?.template.target?.toString() ?? '')
   const [freqKind, setFreqKind] = useState<'dias' | 'semanal'>(freq?.kind ?? 'dias')
@@ -41,6 +43,7 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
     const result = validateHabit({
       name,
       kind,
+      area,
       unit: kind === 'cantidad' ? unit : undefined,
       target: kind === 'cantidad' && target.trim() !== '' ? Number(target.replace(',', '.')) : undefined,
       frequency: freqKind === 'dias' ? { kind: 'dias', days } : { kind: 'semanal', timesPerWeek: Number(perWeek) },
@@ -68,6 +71,17 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
         />
         <FieldError id="habit-name-error" message={errors.name} />
       </div>
+
+      <fieldset className="choice-group">
+        <legend>Área</legend>
+        {AREAS.map((a) => (
+          <label key={a.id} className="choice">
+            <input type="radio" name="area" checked={area === a.id} onChange={() => setArea(a.id)} />
+            <span className={`area-dot area-${a.id}`} aria-hidden="true" />
+            {a.label}
+          </label>
+        ))}
+      </fieldset>
 
       <fieldset className="choice-group">
         <legend>Tipo</legend>

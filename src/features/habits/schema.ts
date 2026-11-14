@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AREAS, DEFAULT_AREA, type AreaId } from './domain/areas'
 
 const FREQ_RANGE = 'Entre 1 y 7 veces por semana'
 
@@ -20,6 +21,7 @@ export const habitInputSchema = z
   .object({
     name: z.string().trim().min(1, 'Escribe un nombre').max(80, 'Máximo 80 caracteres'),
     kind: z.enum(['check', 'cantidad']),
+    area: z.enum(AREAS.map((a) => a.id) as unknown as [AreaId, ...AreaId[]]).default(DEFAULT_AREA),
     unit: z.string().trim().max(20, 'Máximo 20 caracteres').optional(),
     target: z.number().optional(),
     frequency: frequencySchema,
@@ -36,12 +38,12 @@ export const habitInputSchema = z
   .transform((v) =>
     v.kind === 'cantidad'
       ? v
-      : { name: v.name, kind: v.kind, frequency: v.frequency },
+      : { name: v.name, kind: v.kind, area: v.area, frequency: v.frequency },
   )
 
 export type HabitInput = z.infer<typeof habitInputSchema>
 
-export type HabitErrors = Partial<Record<'name' | 'kind' | 'unit' | 'target' | 'frequency', string>>
+export type HabitErrors = Partial<Record<'name' | 'kind' | 'area' | 'unit' | 'target' | 'frequency', string>>
 
 export function validateHabit(input: unknown): { ok: true; data: HabitInput } | { ok: false; errors: HabitErrors } {
   const r = habitInputSchema.safeParse(input)

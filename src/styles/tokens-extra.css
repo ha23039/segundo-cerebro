@@ -16,3 +16,36 @@
 :root[data-theme="dark"] {
   --danger: #f87171;
 }
+
+/* ---- Áreas de vida (categórico validado: CVD y contraste; siempre con etiqueta de texto) ---- */
+:root {
+  --area-estudio: #2a78d6;
+  --area-ejercicio: #eb6834;
+  --area-salud: #1baf7a;
+  --area-finanzas: #eda100;
+  --area-desarrollo: #e87ba4;
+  --area-espiritualidad: #008300;
+  --area-trabajo: #6250d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --area-estudio: #3987e5;
+    --area-ejercicio: #d95926;
+    --area-salud: #199e70;
+    --area-finanzas: #c98500;
+    --area-desarrollo: #d55181;
+    --area-espiritualidad: #008300;
+    --area-trabajo: #9085e9;
+  }
+}
+
+:root[data-theme="dark"] {
+  --area-estudio: #3987e5;
+  --area-ejercicio: #d95926;
+  --area-salud: #199e70;
+  --area-finanzas: #c98500;
+  --area-desarrollo: #d55181;
+  --area-espiritualidad: #008300;
+  --area-trabajo: #9085e9;
+}

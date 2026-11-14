@@ -4,6 +4,7 @@ import './styles/tokens.css'
 import './styles/tokens-extra.css'
 import './styles/base.css'
 import './styles/choices.css'
+import './styles/areas.css'
 import App from './App'
 import { syncThemeColor } from './lib/theme'
 

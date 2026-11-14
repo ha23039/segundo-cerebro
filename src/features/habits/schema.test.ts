@@ -44,6 +44,6 @@ describe('validateHabit', () => {
 
   test('cantidad válida', () => {
     const r = validateHabit({ name: 'Agua', kind: 'cantidad', unit: ' vasos ', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 } })
-    expect(r.ok && r.data).toEqual({ name: 'Agua', kind: 'cantidad', unit: 'vasos', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 } })
+    expect(r.ok && r.data).toEqual({ name: 'Agua', kind: 'cantidad', area: 'desarrollo', unit: 'vasos', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 } })
   })
 })
