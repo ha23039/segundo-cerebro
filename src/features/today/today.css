@@ -628,3 +628,19 @@
     transition: none;
   }
 }
+
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.streak-icon {
+  color: var(--primary);
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Icon } from '../../components/Icon'
 import { toMessage } from '../../lib/errors'
 import { useOnline } from '../layout/useOnline'
 import { areaLabel } from './domain/areas'
@@ -46,7 +47,7 @@ function HabitCard({
               disabled={disabled || first}
               onClick={() => actions.move.mutate({ id: habit.id, dir: 'up' })}
             >
-              <span aria-hidden="true">↑</span>
+              <Icon name="up" />
             </button>
             <button
               className="btn icon-btn"
@@ -56,7 +57,7 @@ function HabitCard({
               disabled={disabled || last}
               onClick={() => actions.move.mutate({ id: habit.id, dir: 'down' })}
             >
-              <span aria-hidden="true">↓</span>
+              <Icon name="down" />
             </button>
             <Link className="btn" to={`/habitos/${habit.id}/editar`}>
               Editar

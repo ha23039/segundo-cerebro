@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { Icon } from '../../components/Icon'
 import { areaLabel } from '../habits/domain/areas'
 import { streakLabel } from '../habits/domain/format'
 import type { Habit, SchedulePeriod, Streak } from '../habits/domain/types'
@@ -19,7 +20,7 @@ function StreakBadge({ streak }: { streak: Streak | null }) {
   if (!streak) return null
   return (
     <span className="streak">
-      <span aria-hidden="true">🔥 </span>
+      <Icon name="flame" size={15} className="streak-icon" />
       <span className="visually-hidden">Racha: </span>
       {streakLabel(streak)}
     </span>
@@ -64,7 +65,7 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Omit<Props, 
         disabled={disabled || current <= 0}
         onClick={() => onSet(Math.max(0, current - 1) || null)}
       >
-        <span aria-hidden="true">−</span>
+        <Icon name="minus" />
       </button>
       <input
         className="quantity-input"
@@ -83,7 +84,7 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Omit<Props, 
         disabled={disabled || current >= MAX}
         onClick={() => onSet(current + 1)}
       >
-        <span aria-hidden="true">+</span>
+        <Icon name="plus" />
       </button>
       <span className="quantity-total">
         {current} / {period.target} {habit.unit}
@@ -99,7 +100,7 @@ export function HabitRow(props: Props) {
       <li className={`card today-row${done ? ' is-done' : ''}`}>
         <button className="today-toggle" type="button" aria-pressed={done} disabled={disabled} onClick={() => onSet(done ? null : 1)}>
           <span className="check-mark" aria-hidden="true">
-            {done ? '✓' : ''}
+            {done && <Icon name="check" size={18} />}
           </span>
           <span className="today-name">{habit.name}</span>
         </button>
@@ -115,7 +116,7 @@ export function HabitRow(props: Props) {
       <div className="today-row-head">
         {done && (
           <span className="check-mark small" role="img" aria-label="Hecho">
-            ✓
+            <Icon name="check" size={14} />
           </span>
         )}
         <span className="today-name">{habit.name}</span>
