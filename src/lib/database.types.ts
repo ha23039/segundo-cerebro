@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "habit_logs": {
+            "daily_priorities": {
+                  Row: {
+                    "created_at": string,"date": string,"done": boolean,"id": string,"position": number,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"date": string,"done"?: boolean,"id"?: string,"position": number,"title": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"date"?: string,"done"?: boolean,"id"?: string,"position"?: number,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"habit_logs": {
                   Row: {
                     "date": string,"habit_id": string,"updated_at": string,"user_id": string,"value": number
                   }
@@ -65,14 +79,14 @@ isOneToOne: false
                   ]
                 },"habits": {
                   Row: {
-                    "archived_at": string | null,"area": string,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"frequency": string,"id": string,"kind": string,"name": string,"position": number,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string
+                    "archived_at": string | null,"area": string,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"frequency": string,"id": string,"kind": string,"name": string,"position": number,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string,"weight": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency": string,"id"?: string,"kind": string,"name": string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string
+                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency": string,"id"?: string,"kind": string,"name": string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
                   }
                   Update: {
-                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency"?: string,"id"?: string,"kind"?: string,"name"?: string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string
+                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"frequency"?: string,"id"?: string,"kind"?: string,"name"?: string,"position"?: number,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
                   }
                   Relationships: [
                     
@@ -101,7 +115,7 @@ isOneToOne: false
 { Args: { "p_habit_id": string }; Returns: undefined
                            },
 "create_habit":
-{ Args: { "p_area"?: string,"p_days": (number)[],"p_frequency": string,"p_kind": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: string
+{ Args: { "p_area"?: string,"p_days": (number)[],"p_frequency": string,"p_kind": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string,"p_weight"?: number }; Returns: string
                            },
 "move_habit":
 { Args: { "p_direction": string,"p_habit_id": string }; Returns: undefined
@@ -110,7 +124,7 @@ isOneToOne: false
 { Args: { "p_habit_id": string }; Returns: undefined
                            },
 "update_habit":
-{ Args: { "p_area"?: string,"p_days": (number)[],"p_frequency": string,"p_habit_id": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string }; Returns: undefined
+{ Args: { "p_area"?: string,"p_days": (number)[],"p_frequency": string,"p_habit_id": string,"p_name": string,"p_target": number,"p_times_per_week": number,"p_unit": string,"p_weight"?: number }; Returns: undefined
                            }
           }
           Enums: {

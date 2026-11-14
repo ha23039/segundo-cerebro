@@ -17,6 +17,8 @@ export interface Habit {
   kind: 'check' | 'cantidad'
   unit: string | null
   area: AreaId
+  /** 1..5: importancia en la puntuación del día. */
+  weight: number
   position: number
   /** Configuración actual (la que se usa al desarchivar). */
   template: { frequency: Frequency; target: number | null }

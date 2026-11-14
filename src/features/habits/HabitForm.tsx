@@ -5,6 +5,12 @@ import { WEEKDAYS } from './domain/format'
 import type { Habit } from './domain/types'
 import { validateHabit, type HabitErrors, type HabitInput } from './schema'
 
+const WEIGHTS = [
+  { value: 1, label: 'Baja' },
+  { value: 3, label: 'Normal' },
+  { value: 5, label: 'Alta' },
+]
+
 interface Props {
   initial?: Habit
   busy: boolean
@@ -27,6 +33,7 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
   const [name, setName] = useState(initial?.name ?? '')
   const [kind, setKind] = useState<'check' | 'cantidad'>(initial?.kind ?? 'check')
   const [area, setArea] = useState<AreaId>(initial?.area ?? DEFAULT_AREA)
+  const [weight, setWeight] = useState(initial?.weight ?? 3)
   const [unit, setUnit] = useState(initial?.unit ?? '')
   const [target, setTarget] = useState(initial?.template.target?.toString() ?? '')
   const [freqKind, setFreqKind] = useState<'dias' | 'semanal'>(freq?.kind ?? 'dias')
@@ -44,6 +51,7 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
       name,
       kind,
       area,
+      weight,
       unit: kind === 'cantidad' ? unit : undefined,
       target: kind === 'cantidad' && target.trim() !== '' ? Number(target.replace(',', '.')) : undefined,
       frequency: freqKind === 'dias' ? { kind: 'dias', days } : { kind: 'semanal', timesPerWeek: Number(perWeek) },
@@ -79,6 +87,16 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
             <input type="radio" name="area" checked={area === a.id} onChange={() => setArea(a.id)} />
             <span className={`area-dot area-${a.id}`} aria-hidden="true" />
             {a.label}
+          </label>
+        ))}
+      </fieldset>
+
+      <fieldset className="choice-group">
+        <legend>Importancia en la puntuación</legend>
+        {WEIGHTS.map((w) => (
+          <label key={w.value} className="choice">
+            <input type="radio" name="weight" checked={weight === w.value} onChange={() => setWeight(w.value)} />
+            {w.label}
           </label>
         ))}
       </fieldset>

@@ -28,6 +28,7 @@ function toHabit(r: HabitRow & { habit_schedules: ScheduleRow[] }): Habit {
     kind: r.kind === 'cantidad' ? 'cantidad' : 'check',
     unit: r.unit,
     area: isAreaId(r.area) ? r.area : DEFAULT_AREA,
+    weight: r.weight,
     position: r.position,
     template: { frequency: toFrequency(r), target: r.target },
     schedules: r.habit_schedules.map(toPeriod).sort((a, b) => a.validFrom.localeCompare(b.validFrom)),
@@ -83,6 +84,7 @@ function rpcArgs(i: HabitInput) {
     p_times_per_week: i.frequency.kind === 'semanal' ? i.frequency.timesPerWeek : null,
     p_target: i.kind === 'cantidad' ? i.target! : null,
     p_area: i.area,
+    p_weight: i.weight,
   }
 }
 

@@ -122,7 +122,7 @@ select is(
   'el hábito de A no cambió'
 );
 select ok(
-  not has_function_privilege('anon', 'public.create_habit(text, text, text, text, smallint[], smallint, numeric, text)', 'execute'),
+  not has_function_privilege('anon', 'public.create_habit(text, text, text, text, smallint[], smallint, numeric, text, smallint)', 'execute'),
   'anon no puede ejecutar las RPC'
 );
 

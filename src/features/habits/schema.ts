@@ -21,6 +21,7 @@ export const habitInputSchema = z
   .object({
     name: z.string().trim().min(1, 'Escribe un nombre').max(80, 'Máximo 80 caracteres'),
     kind: z.enum(['check', 'cantidad']),
+    weight: z.number().int().min(1, 'Entre 1 y 5').max(5, 'Entre 1 y 5').default(3),
     area: z.enum(AREAS.map((a) => a.id) as unknown as [AreaId, ...AreaId[]]).default(DEFAULT_AREA),
     unit: z.string().trim().max(20, 'Máximo 20 caracteres').optional(),
     target: z.number().optional(),
@@ -38,7 +39,7 @@ export const habitInputSchema = z
   .transform((v) =>
     v.kind === 'cantidad'
       ? v
-      : { name: v.name, kind: v.kind, area: v.area, frequency: v.frequency },
+      : { name: v.name, kind: v.kind, area: v.area, weight: v.weight, frequency: v.frequency },
   )
 
 export type HabitInput = z.infer<typeof habitInputSchema>
