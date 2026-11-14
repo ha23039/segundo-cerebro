@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { areaLabel } from '../habits/domain/areas'
 import { streakLabel } from '../habits/domain/format'
 import type { Habit, SchedulePeriod, Streak } from '../habits/domain/types'
 
@@ -21,6 +22,15 @@ function StreakBadge({ streak }: { streak: Streak | null }) {
       <span aria-hidden="true">🔥 </span>
       <span className="visually-hidden">Racha: </span>
       {streakLabel(streak)}
+    </span>
+  )
+}
+
+function AreaTag({ habit }: { habit: Habit }) {
+  return (
+    <span className="area-tag">
+      <span className={`area-dot area-${habit.area}`} aria-hidden="true" />
+      {areaLabel(habit.area)}
     </span>
   )
 }
@@ -93,7 +103,10 @@ export function HabitRow(props: Props) {
           </span>
           <span className="today-name">{habit.name}</span>
         </button>
-        <StreakBadge streak={streak} />
+        <span className="today-side">
+          <AreaTag habit={habit} />
+          <StreakBadge streak={streak} />
+        </span>
       </li>
     )
   }
@@ -106,7 +119,10 @@ export function HabitRow(props: Props) {
           </span>
         )}
         <span className="today-name">{habit.name}</span>
-        <StreakBadge streak={streak} />
+        <span className="today-side">
+          <AreaTag habit={habit} />
+          <StreakBadge streak={streak} />
+        </span>
       </div>
       <QuantityControl key={props.value ?? 0} {...props} />
     </li>
