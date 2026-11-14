@@ -3,10 +3,12 @@ import { Link } from 'react-router'
 import { addDays, formatLongDate, startOfWeek } from '../../lib/dates'
 import { toMessage } from '../../lib/errors'
 import { AreaBreakdown } from '../dashboard/AreaBreakdown'
-import { globalStreak, lastDays, rangeCount, ratio } from '../dashboard/domain/summary'
-import { greeting, pct } from '../dashboard/format'
-import { ProgressRing } from '../dashboard/ProgressRing'
-import { StatCard } from '../dashboard/StatCard'
+import { averageScore, dayScore, lastScores, scoreStreak, STREAK_THRESHOLD, type Priority } from '../dashboard/domain/score'
+import { rangeCount, ratio } from '../dashboard/domain/summary'
+import { greeting } from '../dashboard/format'
+import { groupByDate, usePriorities } from '../dashboard/priorities'
+import { PrioritiesCard } from '../dashboard/PrioritiesCard'
+import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
 import { isDone, isDueOn, periodAt } from '../habits/domain/schedule'
@@ -21,6 +23,21 @@ import { HabitRow } from './HabitRow'
 import './today.css'
 
 const EMPTY: LogsByDate = new Map()
+const NO_PRIORITIES: Priority[] = []
+
+function ScoreStat({ label, value, prev, hint }: { label: string; value: number | null; prev: number | null; hint: string }) {
+  const d = value === null || prev === null ? null : value - prev
+  return (
+    <div className="card stat">
+      <p className="eyebrow">{label}</p>
+      <p className="stat-value">{value ?? '—'}</p>
+      <p className="stat-hint">
+        {d !== null && <span className={d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta'}>{d > 0 ? `+${d}` : d === 0 ? '±0' : d} </span>}
+        <span className="muted">{hint}</span>
+      </p>
+    </div>
+  )
+}
 
 export function TodayPage() {
   const today = useToday()
@@ -33,51 +50,50 @@ export function TodayPage() {
 
   const habits = useHabits()
   const active = useMemo(() => habits.data?.filter((h) => !h.archivedAt) ?? [], [habits.data])
-  // Rachas y resúmenes necesitan los registros desde el primer periodo de cada hábito
+  // Rachas y medias necesitan los registros desde el primer periodo de cada hábito
   const from = active.flatMap((h) => h.schedules.map((s) => s.validFrom)).sort()[0] ?? addDays(today, -7)
   const logs = useLogs(from, habits.isSuccess)
+  const priorities = usePriorities(from, habits.isSuccess)
   const setLog = useSetLog()
   const logMap = logs.data ?? new Map<string, LogsByDate>()
+  const prioByDate = useMemo(() => groupByDate(priorities.data ?? []), [priorities.data])
+  const dayPriorities = prioByDate.get(date) ?? NO_PRIORITIES
 
   const due = active.filter((h) => isDueOn(h, logMap.get(h.id) ?? EMPTY, date))
-  const doneOf = (id: string) => {
+  const isHabitDone = (id: string) => {
     const h = due.find((x) => x.id === id)!
     const p = periodAt(h, date)
     return !!p && isDone(h, p, logMap.get(h.id)?.get(date))
   }
-  const doneCount = due.filter((h) => doneOf(h.id)).length
-  const shown = onlyPending ? due.filter((h) => !doneOf(h.id)) : due
+  const shown = onlyPending ? due.filter((h) => !isHabitDone(h.id)) : due
   const loading = habits.isPending || (active.length > 0 && logs.isPending)
+  const day = logs.data ? dayScore(active, logs.data, dayPriorities, date) : null
 
   const stats = useMemo(() => {
     if (!logs.data || active.length === 0) return null
     const ws = startOfWeek(today)
     const ms = `${today.slice(0, 8)}01`
     const prevMs = `${addDays(ms, -1).slice(0, 8)}01`
-    const sinceMonth = Number(today.slice(8, 10)) - 1
+    const intoMonth = Number(today.slice(8, 10)) - 1
     return {
-      week: ratio(rangeCount(active, logs.data, ws, today, today)),
-      prevWeek: ratio(rangeCount(active, logs.data, addDays(ws, -7), addDays(today, -7), today)),
-      month: ratio(rangeCount(active, logs.data, ms, today, today)),
-      prevMonth: ratio(rangeCount(active, logs.data, prevMs, addDays(prevMs, sinceMonth), today)),
-      streak: globalStreak(active, logs.data, today),
-      days: lastDays(active, logs.data, today, 7),
+      week: averageScore(active, logs.data, prioByDate, ws, today, today),
+      prevWeek: averageScore(active, logs.data, prioByDate, addDays(ws, -7), addDays(today, -7), addDays(today, -7)),
+      month: averageScore(active, logs.data, prioByDate, ms, today, today),
+      prevMonth: averageScore(active, logs.data, prioByDate, prevMs, addDays(prevMs, intoMonth), addDays(prevMs, intoMonth)),
+      streak: scoreStreak(active, logs.data, prioByDate, today),
+      days: lastScores(active, logs.data, prioByDate, today, 7),
       areas: AREAS.filter((a) => active.some((h) => h.area === a.id)).map((a) => ({
         area: a.id,
         ratio: ratio(rangeCount(active.filter((h) => h.area === a.id), logs.data!, addDays(today, -29), today, today)),
       })),
     }
-  }, [active, logs.data, today])
-
-  const dayRatio = due.length ? doneCount / due.length : null
-  const left = due.length - doneCount
-  const isToday = offset === 0
+  }, [active, logs.data, prioByDate, today])
 
   return (
     <div className="today">
       <header className="today-head">
         <div>
-          <p className="eyebrow">{isToday ? greeting(hour) : 'Corrigiendo un día anterior'}</p>
+          <p className="eyebrow">{offset === 0 ? greeting(hour) : 'Corrigiendo un día anterior'}</p>
           <h1>Hoy</h1>
           <p className="muted today-date">{formatLongDate(date)}</p>
         </div>
@@ -113,48 +129,26 @@ export function TodayPage() {
 
       {!loading && active.length > 0 && (
         <div className="dash">
-          <section className="hero" aria-labelledby="hero-title">
-            <div className="hero-ring">
-              <ProgressRing value={dayRatio ?? 0} />
-              <div className="hero-ring-text" aria-hidden="true">
-                <strong>{due.length ? `${doneCount}/${due.length}` : '—'}</strong>
-                <span>{pct(dayRatio)}</span>
-              </div>
-            </div>
-            <div className="hero-body">
-              <h2 id="hero-title" className="hero-title">
-                {due.length === 0 ? 'Nada programado' : left === 0 ? 'Día completo' : `Te ${left === 1 ? 'falta' : 'faltan'} ${left} por hacer`}
-              </h2>
-              <p className="hero-sub">
-                {doneCount} de {due.length} hechos
-              </p>
-              {stats && (
-                <ul className="hero-chips" aria-label="Resumen rápido">
-                  <li>Racha global: {stats.streak} {stats.streak === 1 ? 'día' : 'días'}</li>
-                  <li>Semana: {pct(stats.week)}</li>
-                </ul>
-              )}
-            </div>
-          </section>
+          <ScoreCard day={day} isToday={offset === 0} />
 
           {stats && (
-            <section className="kpis" aria-label="Resumen">
-              <StatCard label="Semana" value={stats.week} prev={stats.prevWeek} hint="vs. semana anterior" />
-              <StatCard label="Mes" value={stats.month} prev={stats.prevMonth} hint="vs. mes anterior" />
+            <section className="kpis" aria-label="Rendimiento">
+              <ScoreStat label="Semana" value={stats.week} prev={stats.prevWeek} hint="media · vs. semana anterior" />
+              <ScoreStat label="Mes" value={stats.month} prev={stats.prevMonth} hint="media · vs. mes anterior" />
               <div className="card stat">
-                <p className="eyebrow">Racha global</p>
+                <p className="eyebrow">Racha</p>
                 <p className="stat-value">
                   {stats.streak} <span className="stat-unit">{stats.streak === 1 ? 'día' : 'días'}</span>
                 </p>
-                <p className="stat-hint muted">seguidos con 80 % o más</p>
+                <p className="stat-hint muted">seguidos con {STREAK_THRESHOLD} o más</p>
               </div>
             </section>
           )}
 
           <div className="dash-grid">
-            <section className="dash-habits" aria-labelledby="habits-title">
+            <section className="card dash-habits" aria-labelledby="habits-title">
               <div className="card-head">
-                <h2 id="habits-title">Hábitos del día</h2>
+                <h2 id="habits-title">Hábitos de hoy</h2>
                 <div className="pills" role="group" aria-label="Filtro">
                   <button type="button" className="pill" aria-pressed={!onlyPending} onClick={() => setOnlyPending(false)}>
                     Todos
@@ -165,12 +159,12 @@ export function TodayPage() {
                 </div>
               </div>
               {due.length === 0 ? (
-                <div className="card empty-state">
+                <div className="empty-state">
                   <p className="empty-title">No tienes hábitos para este día.</p>
                   <Link to="/habitos/nuevo">Crear un hábito</Link>
                 </div>
               ) : shown.length === 0 ? (
-                <p className="card empty-state empty-title">No te queda nada pendiente. Buen trabajo.</p>
+                <p className="empty-state empty-title">No te queda nada pendiente. Buen trabajo.</p>
               ) : (
                 <ul className="today-list">
                   {shown.map((h) => {
@@ -194,12 +188,11 @@ export function TodayPage() {
               )}
             </section>
 
-            {stats && (
-              <aside className="dash-side" aria-label="Progreso">
-                <WeekChart days={stats.days} today={today} />
-                <AreaBreakdown stats={stats.areas} />
-              </aside>
-            )}
+            <aside className="dash-side" aria-label="Plan y progreso">
+              <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
+              {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
+              {stats && <AreaBreakdown stats={stats.areas} />}
+            </aside>
           </div>
         </div>
       )}

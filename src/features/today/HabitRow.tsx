@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
 import { Icon } from '../../components/Icon'
+import { completion } from '../dashboard/domain/score'
 import { areaLabel } from '../habits/domain/areas'
 import { streakLabel } from '../habits/domain/format'
 import type { Habit, SchedulePeriod, Streak } from '../habits/domain/types'
@@ -27,11 +28,14 @@ function StreakBadge({ streak }: { streak: Streak | null }) {
   )
 }
 
-function AreaTag({ habit }: { habit: Habit }) {
+function Side({ habit, streak }: { habit: Habit; streak: Streak | null }) {
   return (
-    <span className="area-tag">
-      <span className={`area-dot area-${habit.area}`} aria-hidden="true" />
-      {areaLabel(habit.area)}
+    <span className="today-side">
+      <span className="area-tag">
+        <span className={`area-dot area-${habit.area}`} aria-hidden="true" />
+        {areaLabel(habit.area)}
+      </span>
+      <StreakBadge streak={streak} />
     </span>
   )
 }
@@ -93,39 +97,42 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Omit<Props, 
   )
 }
 
+/** Fila de hábito al estilo APEX: casilla, estado, progreso parcial y área. */
 export function HabitRow(props: Props) {
-  const { habit, done, streak, disabled, onSet } = props
+  const { habit, period, value, done, streak, disabled, onSet } = props
   if (habit.kind === 'check') {
     return (
-      <li className={`card today-row${done ? ' is-done' : ''}`}>
+      <li className={`today-row${done ? ' is-done' : ''}`}>
         <button className="today-toggle" type="button" aria-pressed={done} disabled={disabled} onClick={() => onSet(done ? null : 1)}>
-          <span className="check-mark" aria-hidden="true">
-            {done && <Icon name="check" size={18} />}
+          <span className="check-box" aria-hidden="true">
+            {done && <Icon name="check" size={14} />}
           </span>
-          <span className="today-name">{habit.name}</span>
+          <span className="today-main">
+            <span className="today-name">{habit.name}</span>
+            <span className="today-meta">{done ? 'Hecho' : 'Pendiente'}</span>
+          </span>
         </button>
-        <span className="today-side">
-          <AreaTag habit={habit} />
-          <StreakBadge streak={streak} />
-        </span>
+        <Side habit={habit} streak={streak} />
       </li>
     )
   }
+  const pct = Math.round(completion(habit, period, value) * 100)
   return (
-    <li className={`card today-row today-row-quantity${done ? ' is-done' : ''}`}>
+    <li className={`today-row today-row-quantity${done ? ' is-done' : ''}`}>
       <div className="today-row-head">
-        {done && (
-          <span className="check-mark small" role="img" aria-label="Hecho">
-            <Icon name="check" size={14} />
-          </span>
-        )}
-        <span className="today-name">{habit.name}</span>
-        <span className="today-side">
-          <AreaTag habit={habit} />
-          <StreakBadge streak={streak} />
+        <span className="check-box" role="img" aria-label={done ? 'Hecho' : 'Pendiente'}>
+          {done && <Icon name="check" size={14} />}
         </span>
+        <span className="today-main">
+          <span className="today-name">{habit.name}</span>
+          <span className="today-meta">{done ? 'Meta cumplida' : `${pct} % de la meta`}</span>
+        </span>
+        <Side habit={habit} streak={streak} />
       </div>
-      <QuantityControl key={props.value ?? 0} {...props} />
+      <div className="today-progress" aria-hidden="true">
+        <span style={{ width: `${pct}%` }} />
+      </div>
+      <QuantityControl key={value ?? 0} {...props} />
     </li>
   )
 }

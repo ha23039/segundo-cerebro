@@ -644,3 +644,228 @@
   align-items: center;
   gap: 2px;
 }
+
+/* ===== Estilo APEX: puntuación, filas y prioridades ===== */
+.hero-eyebrow {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.hero-note {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.hero-bar {
+  margin-top: 12px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--on-primary) 22%, transparent);
+  overflow: hidden;
+}
+
+.hero-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--on-primary);
+  transition: width 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.hero-ring-text strong {
+  font-size: 2rem;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+}
+
+.dash-habits {
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.today-row {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 4px 12px 4px 4px;
+}
+
+.today-row.is-done {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+}
+
+.check-box {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1.5px solid var(--muted);
+  color: var(--on-primary);
+  transition: background 150ms, border-color 150ms;
+}
+
+.check-box.round {
+  border-radius: 50%;
+}
+
+.is-done .check-box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.today-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.today-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.today-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.today-progress span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  transition: width 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.today-row-quantity {
+  gap: 10px;
+}
+
+.week-bar.is-below {
+  background: color-mix(in srgb, var(--primary) 40%, var(--surface));
+}
+
+/* Prioridades */
+.prio-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 16px;
+}
+
+.prio-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding-right: 4px;
+}
+
+.prio.is-done {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+}
+
+.prio-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 4px 12px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.prio-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.prio.is-done .prio-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.prio-form {
+  display: flex;
+  gap: 8px;
+}
+
+.prio-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.stat-hint .delta {
+  margin-right: 6px;
+}
+
+/* Apex en oscuro: tarjeta de puntuación sobria (superficie + acento), como en APEX */
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+}
+
+:root[data-palette="apex"][data-theme="dark"] .hero {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+:root[data-palette="apex"][data-theme="dark"] .hero::after,
+:root[data-palette="apex"][data-theme="dark"] .hero .ring-track,
+:root[data-palette="apex"][data-theme="dark"] .hero-bar {
+  background: none;
+}
+
+:root[data-palette="apex"][data-theme="dark"] .hero .ring-track { stroke: var(--border); }
+:root[data-palette="apex"][data-theme="dark"] .hero .ring-value { stroke: var(--primary); }
+:root[data-palette="apex"][data-theme="dark"] .hero-ring-text strong { color: var(--primary); }
+:root[data-palette="apex"][data-theme="dark"] .hero-bar { background: var(--border); }
+:root[data-palette="apex"][data-theme="dark"] .hero-bar span { background: var(--primary); }
+:root[data-palette="apex"][data-theme="dark"] .hero-eyebrow,
+:root[data-palette="apex"][data-theme="dark"] .hero-note { color: var(--muted); opacity: 1; }
+
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero::after { background: none; }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero .ring-track { stroke: var(--border); }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero .ring-value { stroke: var(--primary); }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero-ring-text strong { color: var(--primary); }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero-bar { background: var(--border); }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero-bar span { background: var(--primary); }
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero-eyebrow,
+  :root[data-palette="apex"]:not([data-theme="light"]) .hero-note { color: var(--muted); opacity: 1; }
+}

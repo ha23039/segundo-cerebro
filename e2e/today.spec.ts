@@ -25,7 +25,7 @@ test('marcar un hábito, persiste al recargar y suma racha', async ({ page }) =>
   await toggle.click()
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
   await expect(row(page, 'Leer')).toContainText('0 días')
-  await expect(page.getByText('0 de 1 hechos')).toBeVisible()
+  await expect(page.getByText('0 de 1 hábitos')).toBeVisible()
 })
 
 test('hábito de cantidad con +/- y escribiendo el valor', async ({ page }) => {
@@ -40,7 +40,7 @@ test('hábito de cantidad con +/- y escribiendo el valor', async ({ page }) => {
   await input.fill('8')
   await input.press('Enter')
   await expect(row(page, 'Agua')).toContainText('8 / 8 vasos')
-  await expect(page.getByText('1 de 1 hechos')).toBeVisible()
+  await expect(page.getByText('1 de 1 hábitos')).toBeVisible()
   await page.reload()
   await expect(row(page, 'Agua')).toContainText('8 / 8 vasos')
 })

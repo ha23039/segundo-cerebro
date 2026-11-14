@@ -1,27 +1,26 @@
 import { formatLongDate, isoWeekday, type IsoDate } from '../../lib/dates'
-import { pct } from './format'
 
 const LETTERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-const THRESHOLD = 0.8
 
-/** Cumplimiento de los últimos 7 días, con la línea del 80 % que mantiene la racha global. */
-export function WeekChart({ days, today }: { days: { date: IsoDate; ratio: number | null }[]; today: IsoDate }) {
-  const summary = days.map((d) => `${formatLongDate(d.date)}: ${pct(d.ratio)}`).join('; ')
+/** Puntuación de los últimos 7 días (0-100) con la línea del umbral de racha. */
+export function WeekChart({ days, today, threshold }: { days: { date: IsoDate; score: number | null }[]; today: IsoDate; threshold: number }) {
+  const label = (s: number | null) => (s === null ? 'sin nada programado' : `${s} de 100`)
+  const summary = days.map((d) => `${formatLongDate(d.date)}: ${d.date === today ? 'en curso, ' : ''}${label(d.score)}`).join('; ')
   return (
     <section className="card chart-card" aria-labelledby="week-chart-title">
       <div className="card-head">
-        <h2 id="week-chart-title">Últimos 7 días</h2>
-        <span className="muted small">línea: 80 % (racha)</span>
+        <h2 id="week-chart-title">Esta semana</h2>
+        <span className="muted small">línea: umbral de racha, {threshold}</span>
       </div>
-      <div className="week-chart" role="img" aria-label={`Cumplimiento diario. ${summary}`}>
-        <div className="week-threshold" style={{ bottom: `${THRESHOLD * 100}%` }} aria-hidden="true" />
+      <div className="week-chart" role="img" aria-label={`Puntuación por día. ${summary}`}>
+        <div className="week-threshold" style={{ bottom: `${threshold}%` }} aria-hidden="true" />
         {days.map((d) => (
-          <div key={d.date} className="week-col" title={`${formatLongDate(d.date)}: ${pct(d.ratio)}`}>
+          <div key={d.date} className="week-col" title={`${formatLongDate(d.date)}: ${label(d.score)}`}>
             <div className="week-track">
-              {d.ratio !== null ? (
+              {d.score !== null ? (
                 <div
-                  className={`week-bar${d.date === today ? ' is-today' : ''}`}
-                  style={{ height: `${Math.max(4, Math.round(d.ratio * 100))}%` }}
+                  className={`week-bar${d.date === today ? ' is-today' : ''}${d.score < threshold ? ' is-below' : ''}`}
+                  style={{ height: `${Math.max(4, d.score)}%` }}
                 />
               ) : (
                 <div className="week-empty" />
