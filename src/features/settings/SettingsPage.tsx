@@ -10,6 +10,7 @@ import { TrashSection } from './TrashSection'
 import '../habits/habits.css'
 
 const PALETTES: { value: Palette; label: string }[] = [
+  { value: 'apex', label: 'Apex' },
   { value: 'indigo', label: 'Índigo' },
   { value: 'oceano', label: 'Océano' },
 ]

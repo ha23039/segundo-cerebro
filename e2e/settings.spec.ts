@@ -32,7 +32,7 @@ test('automático sigue al sistema', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.*/)
   await page.emulateMedia({ colorScheme: 'dark' })
   const bg = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg').trim())
-  expect(bg).toBe('#0d1017')
+  expect(bg).toBe('#0b0d0c') // Apex oscuro (paleta por defecto)
 })
 
 test('la zona horaria se guarda en la base de datos', async ({ page }) => {
@@ -46,7 +46,7 @@ test('la zona horaria se guarda en la base de datos', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: 'Zona horaria guardada' })).toBeVisible()
 })
 
-for (const palette of ['Índigo', 'Océano']) {
+for (const palette of ['Apex', 'Índigo', 'Océano']) {
   for (const mode of ['Claro', 'Oscuro']) {
     test(`sin violaciones de accesibilidad: ${palette} ${mode}`, async ({ page }) => {
       await page.getByRole('radio', { name: palette }).check()
@@ -55,3 +55,11 @@ for (const palette of ['Índigo', 'Océano']) {
     })
   }
 }
+
+test('Apex viene marcada por defecto y usa su fondo oscuro', async ({ page }) => {
+  await expect(page.getByRole('radio', { name: 'Apex' })).toBeChecked()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'apex')
+  await page.getByRole('radio', { name: 'Oscuro' }).check()
+  const bg = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg').trim())
+  expect(bg).toBe('#0b0d0c')
+})
