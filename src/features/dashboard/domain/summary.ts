@@ -1,6 +1,7 @@
 import { addDays, type IsoDate } from '../../../lib/dates'
-import { isDone, isDueOn, isScheduledDay, periodAt } from '../../habits/domain/schedule'
-import type { Habit, LogsByDate } from '../../habits/domain/types'
+import { NO_EXCUSES } from '../../habits/domain/excuses'
+import { isDone, isDueOn, periodAt } from '../../habits/domain/schedule'
+import type { Excuses, Habit, LogsByDate } from '../../habits/domain/types'
 
 export interface Count {
   done: number
@@ -14,15 +15,14 @@ export function ratio(c: Count): number | null {
 }
 
 /** Lo que tocaba un día y cuánto se hizo. Los semanales cuentan mientras la semana no esté cumplida. */
-export function dayCount(habits: Habit[], logs: Map<string, LogsByDate>, date: IsoDate, _today: IsoDate): Count {
+export function dayCount(habits: Habit[], logs: Map<string, LogsByDate>, date: IsoDate, _today: IsoDate, ex: Excuses = NO_EXCUSES): Count {
   let done = 0
   let scheduled = 0
   for (const h of habits) {
     const p = periodAt(h, date)
     if (!p || h.archivedAt) continue
     const hl = logs.get(h.id) ?? EMPTY
-    const due = p.frequency.kind === 'dias' ? isScheduledDay(h, date) : isDueOn(h, hl, date)
-    if (!due) continue
+    if (!isDueOn(h, hl, date, ex)) continue
     scheduled++
     if (isDone(h, p, hl.get(date))) done++
   }
@@ -30,11 +30,11 @@ export function dayCount(habits: Habit[], logs: Map<string, LogsByDate>, date: I
 }
 
 /** Suma de un rango. Los días futuros no cuentan; hoy solo suma lo ya hecho. */
-export function rangeCount(habits: Habit[], logs: Map<string, LogsByDate>, from: IsoDate, to: IsoDate, today: IsoDate): Count {
+export function rangeCount(habits: Habit[], logs: Map<string, LogsByDate>, from: IsoDate, to: IsoDate, today: IsoDate, ex: Excuses = NO_EXCUSES): Count {
   let done = 0
   let scheduled = 0
   for (let d = from; d <= to && d <= today; d = addDays(d, 1)) {
-    const c = dayCount(habits, logs, d, today)
+    const c = dayCount(habits, logs, d, today, ex)
     done += c.done
     scheduled += d === today ? c.done : c.scheduled
   }

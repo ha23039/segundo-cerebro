@@ -1,6 +1,7 @@
 import { addDays, startOfWeek, type IsoDate } from '../../../lib/dates'
-import { isDone, isScheduledDay, periodAt, weekDoneCount } from './schedule'
-import type { Habit, LogsByDate, SchedulePeriod, Streak } from './types'
+import { isExcused, NO_EXCUSES } from './excuses'
+import { isDone, isScheduledDay, periodAt, weekDoneCount, weekTarget } from './schedule'
+import type { Excuses, Habit, LogsByDate, SchedulePeriod, Streak } from './types'
 
 function firstDay(h: Habit): IsoDate {
   return h.schedules.reduce((min, p) => (p.validFrom < min ? p.validFrom : min), h.schedules[0].validFrom)
@@ -17,9 +18,10 @@ function lastPeriodInWeek(h: Habit, weekStart: IsoDate, until: IsoDate): Schedul
 
 /**
  * Racha actual. La unidad la da el periodo vigente; al retroceder se detiene en un periodo
- * de otra frecuencia o antes del primer periodo.
+ * de otra frecuencia o antes del primer periodo. Los días excusados (descanso u omisión
+ * justificada) se saltan: ni suman ni rompen. Una semana excusada por completo tampoco.
  */
-export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate): Streak | null {
+export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate, ex: Excuses = NO_EXCUSES): Streak | null {
   if (h.archivedAt || h.schedules.length === 0) return null
   const current = periodAt(h, today)
   if (!current) return null
@@ -33,6 +35,7 @@ export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate): Strea
       if (p.frequency.kind !== 'dias') break
       if (!isScheduledDay(h, d)) continue
       if (isDone(h, p, logs.get(d))) value++
+      else if (isExcused(ex, h.id, d)) continue
       else if (d !== today) break
     }
     return { value, unit: 'dias' }
@@ -45,7 +48,9 @@ export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate): Strea
     const ref = lastPeriodInWeek(h, w, w === thisWeek ? today : sunday)
     if (!ref) continue // semana entera sin periodo
     if (ref.frequency.kind !== 'semanal') break
-    const met = weekDoneCount(h, logs, w) >= ref.frequency.timesPerWeek
+    const target = weekTarget(h, logs, w, ref.frequency.timesPerWeek, ex)
+    if (target === 0) continue // semana excusada por completo
+    const met = weekDoneCount(h, logs, w) >= target
     // Parcial: algún periodo empieza después del lunes o termina antes del domingo
     const partial = h.schedules.some(
       (p) => (p.validFrom > w && p.validFrom <= sunday) || (p.validTo !== null && p.validTo >= w && p.validTo < sunday),

@@ -33,3 +33,14 @@ export interface Streak {
   value: number
   unit: 'dias' | 'semanas'
 }
+
+export type SkipReason = 'enfermedad' | 'viaje' | 'imprevisto' | 'descanso' | 'otro'
+
+/**
+ * Lo que excusa un día: descansos planificados (todo el día) y omisiones justificadas
+ * (un hábito ese día). Lo excusado no puntúa ni rompe rachas; si igualmente se hizo, cuenta.
+ */
+export interface Excuses {
+  rest: ReadonlySet<IsoDate>
+  skips: ReadonlyMap<string, ReadonlyMap<IsoDate, SkipReason>>
+}
