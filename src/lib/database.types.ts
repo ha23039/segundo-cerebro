@@ -77,6 +77,26 @@ isOneToOne: false
       referencedColumns: ["id","user_id"]
     }
                   ]
+                },"habit_skips": {
+                  Row: {
+                    "created_at": string,"date": string,"habit_id": string,"reason": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"date": string,"habit_id": string,"reason": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"date"?: string,"habit_id"?: string,"reason"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "habit_skips_habit_id_user_id_fkey"
+      columns: ["habit_id","user_id"]
+isOneToOne: false
+      referencedRelation: "habits"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
                 },"habits": {
                   Row: {
                     "archived_at": string | null,"area": string,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"frequency": string,"id": string,"kind": string,"name": string,"position": number,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string,"weight": number
@@ -101,6 +121,20 @@ isOneToOne: false
                   }
                   Update: {
                     "timezone"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"rest_days": {
+                  Row: {
+                    "created_at": string,"date": string,"note": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"date": string,"note"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"date"?: string,"note"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     
