@@ -8,6 +8,11 @@ const PATHS = {
   trendUp: 'M3 17l6-6 4 4 8-8M15 7h6v6',
   trendDown: 'M3 7l6 6 4-4 8 8M15 17h6v-6',
   flat: 'M4 12h16',
+  moon: 'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',
+  skip: 'M5 6l7 6-7 6M13 6l7 6-7 6',
+  undo: 'M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
+  calendar: 'M7 3v4M17 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
+  close: 'M6 6l12 12M18 6 6 18',
 } as const
 
 export type IconName = keyof typeof PATHS

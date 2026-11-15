@@ -1,23 +1,29 @@
+import { Icon } from '../../components/Icon'
 import { formatLongDate, isoWeekday, type IsoDate } from '../../lib/dates'
 
 const LETTERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
 /** Puntuación de los últimos 7 días (0-100) con la línea del umbral de racha. */
-export function WeekChart({ days, today, threshold }: { days: { date: IsoDate; score: number | null }[]; today: IsoDate; threshold: number }) {
-  const label = (s: number | null) => (s === null ? 'sin nada programado' : `${s} de 100`)
-  const summary = days.map((d) => `${formatLongDate(d.date)}: ${d.date === today ? 'en curso, ' : ''}${label(d.score)}`).join('; ')
+export function WeekChart({ days, today, threshold }: { days: { date: IsoDate; score: number | null; rest?: boolean }[]; today: IsoDate; threshold: number }) {
+  const label = (d: { score: number | null; rest?: boolean }) => (d.rest ? 'descanso' : d.score === null ? 'sin nada pendiente' : `${d.score} de 100`)
+  const summary = days.map((d) => `${formatLongDate(d.date)}: ${d.date === today ? 'en curso, ' : ''}${label(d)}`).join('; ')
   return (
     <section className="card chart-card" aria-labelledby="week-chart-title">
       <div className="card-head">
         <h2 id="week-chart-title">Esta semana</h2>
         <span className="muted small">línea: umbral de racha, {threshold}</span>
+        {days.some((d) => d.rest) && <span className="visually-hidden">Los días con luna son de descanso.</span>}
       </div>
       <div className="week-chart" role="img" aria-label={`Puntuación por día. ${summary}`}>
         <div className="week-threshold" style={{ bottom: `${threshold}%` }} aria-hidden="true" />
         {days.map((d) => (
-          <div key={d.date} className="week-col" title={`${formatLongDate(d.date)}: ${label(d.score)}`}>
+          <div key={d.date} className="week-col" title={`${formatLongDate(d.date)}: ${label(d)}`}>
             <div className="week-track">
-              {d.score !== null ? (
+              {d.rest ? (
+                <div className="week-rest">
+                  <Icon name="moon" size={14} />
+                </div>
+              ) : d.score !== null ? (
                 <div
                   className={`week-bar${d.date === today ? ' is-today' : ''}${d.score < threshold ? ' is-below' : ''}`}
                   style={{ height: `${Math.max(4, d.score)}%` }}

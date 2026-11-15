@@ -15,6 +15,9 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - `habits`: nombre, tipo (`check` | `cantidad` con unidad), orden, `goal_id` opcional, `deleted_at`.
 - `habit_schedules` *(decisión de Claude: el historial no se reescribe)*: hábito, vigente desde, vigente hasta (null = actual), frecuencia (`dias` con días de la semana | `semanal` con N veces), meta (si es `cantidad`). Editar la frecuencia o la meta cierra el periodo actual y abre uno nuevo desde hoy. Archivar cierra el periodo; desarchivar abre uno nuevo. Así, los días pasados se miden siempre con la configuración que tenían.
 - `habit_logs`: hábito, fecha, valor (1 para check; cantidad para cantidad). Único por (hábito, fecha).
+- `daily_priorities`: hasta 3 prioridades por día (posición 1..3), título ≤ 120, hecha.
+- `rest_days` *(APEX)*: día de descanso planificado, nota opcional ≤ 120. Único por (usuario, fecha).
+- `habit_skips` *(APEX)*: omisión justificada de un hábito un día, con motivo (`enfermedad` | `viaje` | `imprevisto` | `descanso` | `otro`). Única por (hábito, fecha).
 - `focus_sessions`: inicio, fin, minutos planificados, minutos reales, tipo (foco | descanso), hábito u objetivo opcional.
 - `goals`: título, descripción, fecha límite, estado (activo | completado | abandonado), `deleted_at`. `milestones`: objetivo, título, hecho, `done_at`, orden.
 - `journal_entries`: fecha (única por usuario), texto ≤ 2000 caracteres.
@@ -26,6 +29,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - **Hecho:** `check` → hay registro; `cantidad` → valor ≥ meta.
 - **Racha (`dias`):** días programados consecutivos hechos. Los días no programados no la rompen; hoy pendiente no la rompe hasta que termina el día. **Racha (`semanal`):** semanas consecutivas con ≥ N; la semana en curso no la rompe.
 - **Semanas parciales (`semanal`)** *(decisión de Claude)*: la semana en que empieza o termina un periodo de horario (crear, editar, archivar), no cuenta para el cumplimiento y no rompe la racha. Si en esa semana llega a N, sí suma a la racha.
+- **Descansos y omisiones** *(decisión de Claude, 2026-11-15)*: un día de descanso excusa todos los hábitos y no tiene puntuación; una omisión justificada excusa un hábito ese día. Lo excusado no puntúa, no cuenta en la constancia ni en las medias y no rompe rachas (ni suma). Si igualmente se hizo, cuenta como hecho. En `semanal`, cada omisión rebaja en 1 el objetivo de esa semana y los descansos quitan días disponibles: objetivo = min(N − omisiones, 7 − omisiones − descansos); una semana con objetivo 0 se salta. Ventana: desde 7 días atrás hasta 90 adelante (planificar), validada en la BD.
 - **Cumplimiento:** hechos ÷ programados en el periodo (`semanal`: min(hechos, N) ÷ N por semana). El total de un periodo suma los hechos y los programados de todos los hábitos (cada vez de un `semanal` cuenta como una unidad); no promedia los porcentajes. Sin nada programado se muestra "—", no 0 %.
 - **Corrección** *(decisión de Claude)*: el límite de hoy y hasta 7 días atrás aplica **solo a los registros de hábitos** y se valida también en la BD. El diario se puede editar sin límite. Las sesiones de foco solo se crean con el temporizador y se pueden borrar, no editar. `done_at` de un hito es el momento en que se marca.
 - **Papelera:** borrar marca `deleted_at`; se puede restaurar 30 días y luego se purga (`pg_cron`).

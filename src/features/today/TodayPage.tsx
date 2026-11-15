@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { Icon } from '../../components/Icon'
 import { addDays, formatLongDate, startOfWeek } from '../../lib/dates'
 import { toMessage } from '../../lib/errors'
 import { AreaBreakdown } from '../dashboard/AreaBreakdown'
@@ -11,6 +12,7 @@ import { PrioritiesCard } from '../dashboard/PrioritiesCard'
 import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
+import { NO_EXCUSES, skipOf } from '../habits/domain/excuses'
 import { isDone, isDueOn, periodAt } from '../habits/domain/schedule'
 import { currentStreak } from '../habits/domain/streaks'
 import type { LogsByDate } from '../habits/domain/types'
@@ -18,6 +20,8 @@ import { useHabits, useLogs, useSetLog } from '../habits/hooks'
 import { ThemeToggle } from '../layout/ThemeToggle'
 import { useOnline } from '../layout/useOnline'
 import { useToday } from '../profile/useToday'
+import { useExcuseMutation, useExcuses } from '../rest/hooks'
+import { RestCard } from '../rest/RestCard'
 import { DayPicker } from './DayPicker'
 import { HabitRow } from './HabitRow'
 import './today.css'
@@ -54,20 +58,32 @@ export function TodayPage() {
   const from = active.flatMap((h) => h.schedules.map((s) => s.validFrom)).sort()[0] ?? addDays(today, -7)
   const logs = useLogs(from, habits.isSuccess)
   const priorities = usePriorities(from, habits.isSuccess)
+  const excusesQuery = useExcuses(from, habits.isSuccess)
+  const ex = excusesQuery.data ?? NO_EXCUSES
+  const restDays = excusesQuery.data?.data.rest
+  const changeExcuse = useExcuseMutation()
   const setLog = useSetLog()
   const logMap = logs.data ?? new Map<string, LogsByDate>()
   const prioByDate = useMemo(() => groupByDate(priorities.data ?? []), [priorities.data])
   const dayPriorities = prioByDate.get(date) ?? NO_PRIORITIES
 
-  const due = active.filter((h) => isDueOn(h, logMap.get(h.id) ?? EMPTY, date))
+  const restDay = restDays?.find((r) => r.date === date) ?? null
+  // En la lista: lo que toca (con las excusas), más lo omitido ese día para poder deshacerlo.
+  // En un día de descanso se muestra lo que tocaría, como opcional.
+  const due = active.filter((h) => {
+    const hl = logMap.get(h.id) ?? EMPTY
+    if (restDay) return isDueOn(h, hl, date)
+    return isDueOn(h, hl, date, ex) || skipOf(ex, h.id, date) !== null
+  })
   const isHabitDone = (id: string) => {
     const h = due.find((x) => x.id === id)!
     const p = periodAt(h, date)
     return !!p && isDone(h, p, logMap.get(h.id)?.get(date))
   }
-  const shown = onlyPending ? due.filter((h) => !isHabitDone(h.id)) : due
-  const loading = habits.isPending || (active.length > 0 && logs.isPending)
-  const day = logs.data ? dayScore(active, logs.data, dayPriorities, date) : null
+  const isPending = (id: string) => !isHabitDone(id) && skipOf(ex, id, date) === null && !restDay
+  const shown = onlyPending ? due.filter((h) => isPending(h.id)) : due
+  const loading = habits.isPending || (active.length > 0 && (logs.isPending || excusesQuery.isPending))
+  const day = logs.data ? dayScore(active, logs.data, dayPriorities, date, ex) : null
 
   const stats = useMemo(() => {
     if (!logs.data || active.length === 0) return null
@@ -76,18 +92,18 @@ export function TodayPage() {
     const prevMs = `${addDays(ms, -1).slice(0, 8)}01`
     const intoMonth = Number(today.slice(8, 10)) - 1
     return {
-      week: averageScore(active, logs.data, prioByDate, ws, today, today),
-      prevWeek: averageScore(active, logs.data, prioByDate, addDays(ws, -7), addDays(today, -7), addDays(today, -7)),
-      month: averageScore(active, logs.data, prioByDate, ms, today, today),
-      prevMonth: averageScore(active, logs.data, prioByDate, prevMs, addDays(prevMs, intoMonth), addDays(prevMs, intoMonth)),
-      streak: scoreStreak(active, logs.data, prioByDate, today),
-      days: lastScores(active, logs.data, prioByDate, today, 7),
+      week: averageScore(active, logs.data, prioByDate, ws, today, today, ex),
+      prevWeek: averageScore(active, logs.data, prioByDate, addDays(ws, -7), addDays(today, -7), addDays(today, -7), ex),
+      month: averageScore(active, logs.data, prioByDate, ms, today, today, ex),
+      prevMonth: averageScore(active, logs.data, prioByDate, prevMs, addDays(prevMs, intoMonth), addDays(prevMs, intoMonth), ex),
+      streak: scoreStreak(active, logs.data, prioByDate, today, ex),
+      days: lastScores(active, logs.data, prioByDate, today, 7, ex),
       areas: AREAS.filter((a) => active.some((h) => h.area === a.id)).map((a) => ({
         area: a.id,
-        ratio: ratio(rangeCount(active.filter((h) => h.area === a.id), logs.data!, addDays(today, -29), today, today)),
+        ratio: ratio(rangeCount(active.filter((h) => h.area === a.id), logs.data!, addDays(today, -29), today, today, ex)),
       })),
     }
-  }, [active, logs.data, prioByDate, today])
+  }, [active, logs.data, prioByDate, today, ex])
 
   return (
     <div className="today">
@@ -109,9 +125,14 @@ export function TodayPage() {
           {toMessage(setLog.error)}
         </p>
       )}
-      {(habits.isError || logs.isError) && (
+      {changeExcuse.isError && (
         <p role="alert" className="error">
-          {toMessage(habits.error ?? logs.error)}
+          {toMessage(changeExcuse.error)}
+        </p>
+      )}
+      {(habits.isError || logs.isError || excusesQuery.isError) && (
+        <p role="alert" className="error">
+          {toMessage(habits.error ?? logs.error ?? excusesQuery.error)}
         </p>
       )}
 
@@ -129,7 +150,7 @@ export function TodayPage() {
 
       {!loading && active.length > 0 && (
         <div className="dash">
-          <ScoreCard day={day} isToday={offset === 0} />
+          <ScoreCard day={day} isToday={offset === 0} rest={restDay} />
 
           {stats && (
             <section className="kpis" aria-label="Rendimiento">
@@ -158,13 +179,19 @@ export function TodayPage() {
                   </button>
                 </div>
               </div>
+              {restDay && due.length > 0 && (
+                <p className="rest-banner">
+                  <Icon name="moon" size={16} />
+                  Día de descanso: nada es obligatorio. Lo que hagas suma a tus rachas.
+                </p>
+              )}
               {due.length === 0 ? (
                 <div className="empty-state">
                   <p className="empty-title">No tienes hábitos para este día.</p>
                   <Link to="/habitos/nuevo">Crear un hábito</Link>
                 </div>
               ) : shown.length === 0 ? (
-                <p className="empty-state empty-title">No te queda nada pendiente. Buen trabajo.</p>
+                <p className="empty-state empty-title">{restDay ? 'Hoy no hay nada pendiente: descansa.' : 'No te queda nada pendiente. Buen trabajo.'}</p>
               ) : (
                 <ul className="today-list">
                   {shown.map((h) => {
@@ -178,9 +205,16 @@ export function TodayPage() {
                         period={period}
                         value={value}
                         done={isDone(h, period, value)}
-                        streak={currentStreak(h, habitLogs, today)}
+                        streak={currentStreak(h, habitLogs, today, ex)}
                         disabled={!online}
+                        skip={skipOf(ex, h.id, date)}
+                        rest={restDay !== null}
                         onSet={(v) => setLog.mutate({ habitId: h.id, date, value: v })}
+                        onSkip={(reason) =>
+                          changeExcuse.mutate(
+                            reason ? { kind: 'skip', habitId: h.id, date, reason } : { kind: 'unskip', habitId: h.id, date },
+                          )
+                        }
                       />
                     )
                   })}
@@ -190,6 +224,7 @@ export function TodayPage() {
 
             <aside className="dash-side" aria-label="Plan y progreso">
               <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
+              <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
               {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
               {stats && <AreaBreakdown stats={stats.areas} />}
             </aside>
