@@ -8,12 +8,20 @@ function firstDay(h: Habit): IsoDate {
 }
 
 /** Periodo del último día activo de la semana, sin pasar de `until`. Define la N de esa semana. */
-function lastPeriodInWeek(h: Habit, weekStart: IsoDate, until: IsoDate): SchedulePeriod | null {
+export function lastPeriodInWeek(h: Habit, weekStart: IsoDate, until: IsoDate): SchedulePeriod | null {
   for (let d = until; d >= weekStart; d = addDays(d, -1)) {
     const p = periodAt(h, d)
     if (p) return p
   }
   return null
+}
+
+/** Semana parcial: algún periodo empieza después del lunes o termina antes del domingo. */
+export function isPartialWeek(h: Habit, weekStart: IsoDate): boolean {
+  const sunday = addDays(weekStart, 6)
+  return h.schedules.some(
+    (p) => (p.validFrom > weekStart && p.validFrom <= sunday) || (p.validTo !== null && p.validTo >= weekStart && p.validTo < sunday),
+  )
 }
 
 /**
@@ -52,9 +60,7 @@ export function currentStreak(h: Habit, logs: LogsByDate, today: IsoDate, ex: Ex
     if (target === 0) continue // semana excusada por completo
     const met = weekDoneCount(h, logs, w) >= target
     // Parcial: algún periodo empieza después del lunes o termina antes del domingo
-    const partial = h.schedules.some(
-      (p) => (p.validFrom > w && p.validFrom <= sunday) || (p.validTo !== null && p.validTo >= w && p.validTo < sunday),
-    )
+    const partial = isPartialWeek(h, w)
     if (met) value++
     else if (w !== thisWeek && !partial) break
   }

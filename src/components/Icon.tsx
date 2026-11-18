@@ -13,6 +13,8 @@ const PATHS = {
   undo: 'M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
   calendar: 'M7 3v4M17 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
   close: 'M6 6l12 12M18 6 6 18',
+  left: 'M15 6l-6 6 6 6',
+  right: 'M9 6l6 6-6 6',
 } as const
 
 export type IconName = keyof typeof PATHS

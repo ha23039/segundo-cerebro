@@ -1,0 +1,315 @@
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.stats h1,
+.stats h2,
+.stats h3 {
+  margin: 0;
+}
+
+.stats-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--border);
+}
+
+.stats-tab {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stats-tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.stats-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.stats-view .card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stepper-label {
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+.stepper-label::first-letter {
+  text-transform: uppercase;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+.stat-cards .stat {
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+
+.tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.stat-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stat-row p {
+  margin: 0;
+}
+
+.stat-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stat-row-head h3 {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.stat-row-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.stat-row-meter {
+  flex: 1 1 180px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+
+.stat-num {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.week-head,
+.week-cells {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 4px;
+}
+
+.week-head {
+  justify-content: end;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.status-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.status-cell.is-hecho {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+  color: var(--primary);
+}
+
+.status-cell.is-no-hecho {
+  border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
+  color: var(--danger);
+}
+
+.status-cell.is-omitido,
+.status-cell.is-descanso {
+  border-style: dashed;
+  color: var(--primary);
+}
+
+.status-cell.is-no-programado,
+.status-cell.is-futuro,
+.status-cell.is-pendiente {
+  opacity: 0.75;
+}
+
+.stat-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.stat-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-legend .status-cell {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.month-grid {
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.month-head {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.month-grid .status-cell {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 40px;
+}
+
+.month-day {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.history-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px 16px;
+}
+
+.history-facts dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.history-facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.month-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.month-table th,
+.month-table td {
+  text-align: left;
+  padding: 8px 6px 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+
+.month-table thead th {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.month-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.month-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 90px;
+}
+
+@media (min-width: 700px) {
+  .stat-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* La regla global `section + section` añade margen: aquí el espacio lo da el gap */
+.stats-view section,
+.stat-cards > section {
+  margin-top: 0;
+}

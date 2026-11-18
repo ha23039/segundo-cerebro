@@ -204,3 +204,8 @@
 .goal-trash-title {
   overflow-wrap: anywhere;
 }
+
+/* La regla global `section + section` añade margen: aquí el espacio lo da el gap */
+.goal-detail > section {
+  margin-top: 0;
+}

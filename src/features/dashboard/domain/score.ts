@@ -84,6 +84,23 @@ export function scoreStreak(habits: Habit[], logs: Map<string, LogsByDate>, prio
   return streak
 }
 
+/** Mejor racha de días con puntuación ≥ 70, con las mismas reglas que `scoreStreak`. */
+export function bestScoreStreak(habits: Habit[], logs: Map<string, LogsByDate>, prio: PrioritiesByDate, today: IsoDate, ex: Excuses = NO_EXCUSES): number {
+  const start = firstDay(habits)
+  if (!start) return 0
+  let run = 0
+  let best = 0
+  for (let d = start; d <= today; d = addDays(d, 1)) {
+    const s = scoreAt(habits, logs, prio, d, ex)
+    if (s === null) continue
+    if (s >= STREAK_THRESHOLD) {
+      run++
+      best = Math.max(best, run)
+    } else if (d !== today) run = 0
+  }
+  return best
+}
+
 /** Media de la puntuación de los días cerrados del rango; si aún no hay ninguno, la de hoy. */
 export function averageScore(
   habits: Habit[],

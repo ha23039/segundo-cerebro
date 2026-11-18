@@ -10,6 +10,7 @@ import { HabitEditPage } from './features/habits/HabitEditPage'
 import { HabitsPage } from './features/habits/HabitsPage'
 import { AppShell } from './features/layout/AppShell'
 import { RouteErrorView } from './features/layout/RouteError'
+import { StatsPage } from './features/stats/StatsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TodayPage } from './features/today/TodayPage'
 import { AppQueryProvider } from './lib/AppQueryProvider'
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: 'habitos/:id/editar', element: <HabitEditPage /> },
       { path: 'objetivos', element: <GoalsPage /> },
       { path: 'objetivos/:id', element: <GoalPage /> },
+      { path: 'estadisticas', element: <StatsPage /> },
       { path: 'ajustes', element: <SettingsPage /> },
     ],
   },
