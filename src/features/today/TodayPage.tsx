@@ -12,6 +12,7 @@ import { PrioritiesCard } from '../dashboard/PrioritiesCard'
 import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
+import { remainingBlocks } from '../habits/domain/blocks'
 import { NO_EXCUSES, skipOf } from '../habits/domain/excuses'
 import { isDone, isDueOn, periodAt } from '../habits/domain/schedule'
 import { currentStreak } from '../habits/domain/streaks'
@@ -19,9 +20,11 @@ import type { LogsByDate } from '../habits/domain/types'
 import { useHabits, useLogs, useSetLog } from '../habits/hooks'
 import { ThemeToggle } from '../layout/ThemeToggle'
 import { useOnline } from '../layout/useOnline'
+import { useNowMinutes } from '../profile/useNowMinutes'
 import { useToday } from '../profile/useToday'
 import { useExcuseMutation, useExcuses } from '../rest/hooks'
 import { RestCard } from '../rest/RestCard'
+import { BlocksCard } from './BlocksCard'
 import { DayPicker } from './DayPicker'
 import { HabitRow } from './HabitRow'
 import './today.css'
@@ -45,6 +48,7 @@ function ScoreStat({ label, value, prev, hint }: { label: string; value: number 
 
 export function TodayPage() {
   const today = useToday()
+  const nowMinutes = useNowMinutes()
   const online = useOnline()
   const [offset, setOffset] = useState(0)
   const [onlyPending, setOnlyPending] = useState(false)
@@ -81,6 +85,10 @@ export function TodayPage() {
     return !!p && isDone(h, p, logMap.get(h.id)?.get(date))
   }
   const isPending = (id: string) => !isHabitDone(id) && skipOf(ex, id, date) === null && !restDay
+  const blocks = remainingBlocks(
+    due.filter((h) => isPending(h.id)),
+    offset === 0 ? nowMinutes : null,
+  )
   const shown = onlyPending ? due.filter((h) => isPending(h.id)) : due
   const loading = habits.isPending || (active.length > 0 && (logs.isPending || excusesQuery.isPending))
   const day = logs.data ? dayScore(active, logs.data, dayPriorities, date, ex) : null
@@ -224,6 +232,7 @@ export function TodayPage() {
 
             <aside className="dash-side" aria-label="Plan y progreso">
               <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
+              <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
               <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
               {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
               {stats && <AreaBreakdown stats={stats.areas} />}

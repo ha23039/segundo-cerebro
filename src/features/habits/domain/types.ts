@@ -20,6 +20,9 @@ export interface Habit {
   /** 1..5: importancia en la puntuación del día. */
   weight: number
   position: number
+  /** Bloque horario opcional 'HH:MM' (hora de reloj en la zona del perfil). El fin solo existe con inicio. */
+  startTime: string | null
+  endTime: string | null
   /** Configuración actual (la que se usa al desarchivar). */
   template: { frequency: Frequency; target: number | null }
   schedules: SchedulePeriod[]

@@ -43,7 +43,7 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
 /** Crea un hábito como el usuario (RPC con su sesión) y, si se pide, adelanta su inicio `backdateDays` días. */
 export async function seedHabit(
   user: TestUser,
-  habit: { name: string; kind?: 'check' | 'cantidad'; unit?: string; target?: number; days?: number[]; perWeek?: number; area?: string; weight?: number },
+  habit: { name: string; kind?: 'check' | 'cantidad'; unit?: string; target?: number; days?: number[]; perWeek?: number; area?: string; weight?: number; startTime?: string; endTime?: string },
   backdateDays = 0,
 ): Promise<string> {
   const client = createClient(process.env.SUPABASE_URL!, process.env.VITE_SUPABASE_PUBLISHABLE_KEY!, {
@@ -62,6 +62,8 @@ export async function seedHabit(
     p_target: kind === 'cantidad' ? (habit.target ?? 1) : null,
     p_area: habit.area ?? 'desarrollo',
     p_weight: habit.weight ?? 3,
+    p_start_time: habit.startTime ?? null,
+    p_end_time: habit.endTime ?? null,
   })
   if (error) throw error
   if (backdateDays > 0) {

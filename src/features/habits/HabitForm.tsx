@@ -39,6 +39,8 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
   const [freqKind, setFreqKind] = useState<'dias' | 'semanal'>(freq?.kind ?? 'dias')
   const [days, setDays] = useState<Weekday[]>(freq?.kind === 'dias' ? freq.days : [])
   const [perWeek, setPerWeek] = useState(freq?.kind === 'semanal' ? String(freq.timesPerWeek) : '3')
+  const [startTime, setStartTime] = useState(initial?.startTime ?? '')
+  const [endTime, setEndTime] = useState(initial?.endTime ?? '')
   const [errors, setErrors] = useState<HabitErrors>({})
 
   function toggleDay(d: Weekday, on: boolean) {
@@ -54,6 +56,8 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
       weight,
       unit: kind === 'cantidad' ? unit : undefined,
       target: kind === 'cantidad' && target.trim() !== '' ? Number(target.replace(',', '.')) : undefined,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
       frequency: freqKind === 'dias' ? { kind: 'dias', days } : { kind: 'semanal', timesPerWeek: Number(perWeek) },
     })
     if (!result.ok) {
@@ -185,6 +189,37 @@ export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Pr
           </div>
         )}
         <FieldError id="habit-frequency-error" message={errors.frequency} />
+      </fieldset>
+
+      <fieldset className="stack">
+        <legend>Horario (opcional)</legend>
+        <p className="muted hint">Si le pones hora, aparece en «Lo que queda de hoy».</p>
+        <div className="row two-cols">
+          <div>
+            <label htmlFor="habit-start">Empieza</label>
+            <input
+              id="habit-start"
+              type="time"
+              value={startTime}
+              aria-invalid={!!errors.startTime}
+              aria-describedby={errors.startTime ? 'habit-start-error' : undefined}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+            <FieldError id="habit-start-error" message={errors.startTime} />
+          </div>
+          <div>
+            <label htmlFor="habit-end">Termina</label>
+            <input
+              id="habit-end"
+              type="time"
+              value={endTime}
+              aria-invalid={!!errors.endTime}
+              aria-describedby={errors.endTime ? 'habit-end-error' : undefined}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+            <FieldError id="habit-end-error" message={errors.endTime} />
+          </div>
+        </div>
       </fieldset>
 
       {serverError && (

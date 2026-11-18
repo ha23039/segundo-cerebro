@@ -44,6 +44,20 @@ describe('validateHabit', () => {
 
   test('cantidad válida', () => {
     const r = validateHabit({ name: 'Agua', kind: 'cantidad', unit: ' vasos ', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 } })
-    expect(r.ok && r.data).toEqual({ name: 'Agua', kind: 'cantidad', area: 'desarrollo', weight: 3, unit: 'vasos', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 } })
+    expect(r.ok && r.data).toEqual({ name: 'Agua', kind: 'cantidad', area: 'desarrollo', weight: 3, unit: 'vasos', target: 8, frequency: { kind: 'semanal', timesPerWeek: 5 }, startTime: null, endTime: null })
+  })
+
+  test('horario: sin horas queda en null; con horas las conserva', () => {
+    expect(validateHabit(valid)).toMatchObject({ ok: true, data: { startTime: null, endTime: null } })
+    expect(validateHabit({ ...valid, startTime: '18:00', endTime: '19:30' })).toMatchObject({ ok: true, data: { startTime: '18:00', endTime: '19:30' } })
+    expect(validateHabit({ ...valid, startTime: '22:30' })).toMatchObject({ ok: true, data: { startTime: '22:30', endTime: null } })
+  })
+
+  test('horario: formato, fin sin inicio y fin anterior al inicio', () => {
+    expect(errors({ ...valid, startTime: '25:00' }).startTime).toBe('Hora no válida')
+    expect(errors({ ...valid, startTime: '9:00' }).startTime).toBe('Hora no válida')
+    expect(errors({ ...valid, endTime: '10:00' }).startTime).toBe('Indica también cuándo empieza')
+    expect(errors({ ...valid, startTime: '10:00', endTime: '10:00' }).endTime).toBe('Debe terminar después de empezar')
+    expect(errors({ ...valid, startTime: '10:00', endTime: '09:00' }).endTime).toBe('Debe terminar después de empezar')
   })
 })
