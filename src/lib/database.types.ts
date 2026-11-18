@@ -37,6 +37,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"goals": {
+                  Row: {
+                    "completed_at": string | null,"created_at": string,"deleted_at": string | null,"description": string | null,"due_date": string,"id": string,"start_date": string,"status": string,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "completed_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date": string,"id"?: string,"start_date"?: string,"status"?: string,"title": string,"user_id"?: string
+                  }
+                  Update: {
+                    "completed_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date"?: string,"id"?: string,"start_date"?: string,"status"?: string,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"habit_logs": {
                   Row: {
                     "date": string,"habit_id": string,"updated_at": string,"user_id": string,"value": number
@@ -99,17 +113,43 @@ isOneToOne: false
                   ]
                 },"habits": {
                   Row: {
-                    "archived_at": string | null,"area": string,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"end_time": string | null,"frequency": string,"id": string,"kind": string,"name": string,"position": number,"start_time": string | null,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string,"weight": number
+                    "archived_at": string | null,"area": string,"created_at": string,"days": (number)[] | null,"deleted_at": string | null,"end_time": string | null,"frequency": string,"goal_id": string | null,"id": string,"kind": string,"name": string,"position": number,"start_time": string | null,"target": number | null,"times_per_week": number | null,"unit": string | null,"user_id": string,"weight": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"end_time"?: string | null,"frequency": string,"id"?: string,"kind": string,"name": string,"position"?: number,"start_time"?: string | null,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
+                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"end_time"?: string | null,"frequency": string,"goal_id"?: string | null,"id"?: string,"kind": string,"name": string,"position"?: number,"start_time"?: string | null,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
                   }
                   Update: {
-                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"end_time"?: string | null,"frequency"?: string,"id"?: string,"kind"?: string,"name"?: string,"position"?: number,"start_time"?: string | null,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
+                    "archived_at"?: string | null,"area"?: string,"created_at"?: string,"days"?: (number)[] | null,"deleted_at"?: string | null,"end_time"?: string | null,"frequency"?: string,"goal_id"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"position"?: number,"start_time"?: string | null,"target"?: number | null,"times_per_week"?: number | null,"unit"?: string | null,"user_id"?: string,"weight"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "habits_goal_fk"
+      columns: ["goal_id","user_id"]
+isOneToOne: false
+      referencedRelation: "goals"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
+                },"milestones": {
+                  Row: {
+                    "created_at": string,"done": boolean,"done_at": string | null,"goal_id": string,"id": string,"position": number,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"done"?: boolean,"done_at"?: string | null,"goal_id": string,"id"?: string,"position"?: number,"title": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"done"?: boolean,"done_at"?: string | null,"goal_id"?: string,"id"?: string,"position"?: number,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "milestones_goal_id_user_id_fkey"
+      columns: ["goal_id","user_id"]
+isOneToOne: false
+      referencedRelation: "goals"
+      referencedColumns: ["id","user_id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
