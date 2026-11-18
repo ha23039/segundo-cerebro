@@ -91,3 +91,42 @@ export function lastMadridMidnight(now = new Date()): Date {
   }
   throw new Error('No se pudo calcular la medianoche de Madrid')
 }
+
+/** Fecha de calendario en Madrid, `offsetDays` días respecto a hoy. */
+export function madridDate(offsetDays = 0): string {
+  const base = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  const d = new Date(`${base}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + offsetDays)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Crea un objetivo con fechas controladas (inicio y límite relativos a hoy) y sus hitos. Devuelve su id. */
+export async function seedGoal(
+  user: TestUser,
+  goal: { title: string; startOffset?: number; dueOffset: number; milestones?: string[]; done?: number },
+): Promise<string> {
+  const db = admin()
+  const { data, error } = await db
+    .from('goals')
+    .insert({ user_id: user.id, title: goal.title, start_date: madridDate(goal.startOffset ?? 0), due_date: madridDate(goal.dueOffset) })
+    .select('id')
+    .single()
+  if (error) throw error
+  const titles = goal.milestones ?? []
+  if (titles.length > 0) {
+    const { error: e2 } = await db
+      .from('milestones')
+      .insert(titles.map((title, i) => ({ user_id: user.id, goal_id: data.id, title, position: i + 1, done: i < (goal.done ?? 0) })))
+    if (e2) throw e2
+  }
+  return data.id
+}
+
+/**
+ * Recarga la página una vez guardados los cambios. Los toques son optimistas: recargar justo después
+ * aborta la petición en vuelo (sobre todo con la máquina cargada) y el cambio no llega al servidor.
+ */
+export async function reloadSaved(page: Page): Promise<void> {
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+}

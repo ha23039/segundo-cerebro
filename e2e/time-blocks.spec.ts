@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { createTestUser, expectNoA11yViolations, login, seedHabit, type TestUser } from './helpers'
+import { createTestUser, expectNoA11yViolations, login, seedHabit, type TestUser, reloadSaved } from './helpers'
 
 let user: TestUser
 
@@ -58,6 +58,6 @@ test('poner hora desde la edición del hábito, con validación', async ({ page 
   await expect(card.getByRole('listitem')).toContainText('Meditar')
 
   // Persiste tras recargar
-  await page.reload()
+  await reloadSaved(page)
   await expect(card.getByRole('listitem')).toContainText('10:00 – 10:45')
 })

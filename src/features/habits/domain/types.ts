@@ -23,6 +23,8 @@ export interface Habit {
   /** Bloque horario opcional 'HH:MM' (hora de reloj en la zona del perfil). El fin solo existe con inicio. */
   startTime: string | null
   endTime: string | null
+  /** Objetivo al que pertenece (0 o 1). */
+  goalId: string | null
   /** Configuración actual (la que se usa al desarchivar). */
   template: { frequency: Frequency; target: number | null }
   schedules: SchedulePeriod[]

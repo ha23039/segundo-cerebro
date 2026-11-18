@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { createTestUser, expectNoA11yViolations, login, seedHabit, type TestUser } from './helpers'
+import { createTestUser, expectNoA11yViolations, login, seedHabit, type TestUser, reloadSaved } from './helpers'
 
 let user: TestUser
 
@@ -23,7 +23,7 @@ test('descansar hoy: no puntúa, la lista pasa a opcional y se puede quitar', as
   await expectNoA11yViolations(page)
 
   // Persiste tras recargar
-  await page.reload()
+  await reloadSaved(page)
   await expect(page.getByRole('heading', { name: 'Día de descanso' })).toBeVisible()
 
   await page.getByRole('region', { name: 'Descanso' }).getByRole('button', { name: 'Quitar descanso' }).click()
@@ -53,7 +53,7 @@ test('omitir un hábito con motivo lo saca de la puntuación y se puede deshacer
   await expect(page.getByText('No te queda nada pendiente. Buen trabajo.')).toBeVisible()
   await page.getByRole('button', { name: 'Todos' }).click()
 
-  await page.reload()
+  await reloadSaved(page)
   await expect(correr).toContainText('Omitido · Enfermedad')
   await correr.getByRole('button', { name: 'Deshacer' }).click()
   await expect(page.getByRole('heading', { name: 'Te falta 1 por hacer' })).toBeVisible()
@@ -74,7 +74,7 @@ test('planificar un descanso futuro y cancelarlo', async ({ page }) => {
   const list = rest.getByRole('listitem')
   await expect(list).toHaveCount(1)
   await expect(list).toContainText('Viaje')
-  await page.reload()
+  await reloadSaved(page)
   await expect(rest.getByRole('listitem')).toHaveCount(1)
 
   await rest.getByRole('button', { name: /^Cancelar descanso del/ }).click()

@@ -19,7 +19,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - `rest_days` *(APEX)*: día de descanso planificado, nota opcional ≤ 120. Único por (usuario, fecha).
 - `habit_skips` *(APEX)*: omisión justificada de un hábito un día, con motivo (`enfermedad` | `viaje` | `imprevisto` | `descanso` | `otro`). Única por (hábito, fecha).
 - `focus_sessions`: inicio, fin, minutos planificados, minutos reales, tipo (foco | descanso), hábito u objetivo opcional.
-- `goals`: título, descripción, fecha límite, estado (activo | completado | abandonado), `deleted_at`. `milestones`: objetivo, título, hecho, `done_at`, orden.
+- `goals`: título, descripción, inicio (`start_date`, hoy al crear), fecha límite, estado (activo | completado | abandonado), `completed_at`, `deleted_at` (papelera con purga a los 30 días). `milestones`: objetivo, título, hecho, `done_at`, orden.
 - `journal_entries`: fecha (única por usuario), texto ≤ 2000 caracteres.
 - `notes`: título, cuerpo en Markdown, etiquetas (`text[]`), búsqueda de texto completo en español, `deleted_at`.
 - Validación en el cliente y restricciones en la BD (longitudes, `check`, valores > 0).
@@ -54,6 +54,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 
 **H5 Objetivos.** Creo objetivos con hitos y fecha límite.
 - Progreso = hitos hechos ÷ total. Muestra los días restantes o "vencido". Puedo vincular hábitos (un hábito pertenece a 0 o 1 objetivo).
+- **Ritmo esperado** *(decisión de Claude, 2026-11-18)*: el plazo se reparte de forma lineal entre el inicio y la fecha límite; lo esperado hoy es la parte del plazo transcurrida (0–100 %), y se compara con el avance real (hitos hechos ÷ total). Dentro de ±10 puntos es *en ritmo*; por encima, *adelantado*; por debajo, *atrasado*. Pasada la fecha límite sin completar es *vencido* (el propio día del límite aún no). Sin hitos no hay ritmo (*sin hitos*, solo el plazo). La barra de progreso lleva una marca en el avance esperado y se muestra «Ritmo esperado: N de M hoy». Hoy avisa de los objetivos activos que vencen en ≤ 7 días o ya vencidos.
 
 **H6 Diario y notas.** Escribo una entrada breve al día y guardo notas.
 - Diario: una entrada por fecha, editable, con un listado por fecha.

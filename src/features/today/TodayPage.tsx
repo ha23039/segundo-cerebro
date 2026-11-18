@@ -12,6 +12,9 @@ import { PrioritiesCard } from '../dashboard/PrioritiesCard'
 import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
+import { dueSoon } from '../goals/domain/pace'
+import { GoalsDueCard } from '../goals/GoalsDueCard'
+import { useGoals } from '../goals/hooks'
 import { remainingBlocks } from '../habits/domain/blocks'
 import { NO_EXCUSES, skipOf } from '../habits/domain/excuses'
 import { isDone, isDueOn, periodAt } from '../habits/domain/schedule'
@@ -66,6 +69,7 @@ export function TodayPage() {
   const ex = excusesQuery.data ?? NO_EXCUSES
   const restDays = excusesQuery.data?.data.rest
   const changeExcuse = useExcuseMutation()
+  const goals = useGoals()
   const setLog = useSetLog()
   const logMap = logs.data ?? new Map<string, LogsByDate>()
   const prioByDate = useMemo(() => groupByDate(priorities.data ?? []), [priorities.data])
@@ -233,6 +237,7 @@ export function TodayPage() {
             <aside className="dash-side" aria-label="Plan y progreso">
               <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
               <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
+              <GoalsDueCard goals={dueSoon(goals.data ?? [], today)} today={today} />
               <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
               {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
               {stats && <AreaBreakdown stats={stats.areas} />}

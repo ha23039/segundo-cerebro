@@ -20,6 +20,7 @@ export function habit(schedules: SchedulePeriod[], extra: Partial<Habit> = {}): 
     weight: 3,
     position: 1,
     startTime: null,
+    goalId: null,
     endTime: null,
     template: { frequency: last.frequency, target: last.target },
     schedules,

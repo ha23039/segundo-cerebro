@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, formatLongDate, todayIn } from '../src/lib/dates'
-import { createTestUser, expectNoA11yViolations, lastMadridMidnight, login, seedHabit, type TestUser } from './helpers'
+import { createTestUser, expectNoA11yViolations, lastMadridMidnight, login, seedHabit, type TestUser, reloadSaved } from './helpers'
 
 let user: TestUser
 
@@ -20,7 +20,7 @@ test('marcar un hábito, persiste al recargar y suma racha', async ({ page }) =>
   await toggle.click()
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await expect(row(page, 'Leer')).toContainText('1 día')
-  await page.reload()
+  await reloadSaved(page)
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await toggle.click()
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
@@ -41,7 +41,7 @@ test('hábito de cantidad con +/- y escribiendo el valor', async ({ page }) => {
   await input.press('Enter')
   await expect(row(page, 'Agua')).toContainText('8 / 8 vasos')
   await expect(page.getByText('1 de 1 hábitos')).toBeVisible()
-  await page.reload()
+  await reloadSaved(page)
   await expect(row(page, 'Agua')).toContainText('8 / 8 vasos')
 })
 
@@ -56,7 +56,7 @@ test('corregir ayer y no más de 7 días atrás', async ({ page }) => {
   await picker.getByRole('button', { name: 'Hoy' }).click()
   await expect(row(page, 'Leer').getByRole('button', { name: 'Leer' })).toHaveAttribute('aria-pressed', 'false')
   await expect(row(page, 'Leer')).toContainText('1 día') // ayer hecho, hoy pendiente
-  await page.reload()
+  await reloadSaved(page)
   await page.getByRole('group', { name: 'Día' }).getByRole('button', { name: 'Ayer' }).click()
   await expect(row(page, 'Leer').getByRole('button', { name: 'Leer' })).toHaveAttribute('aria-pressed', 'true')
 })

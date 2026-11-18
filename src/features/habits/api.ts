@@ -30,6 +30,7 @@ function toHabit(r: HabitRow & { habit_schedules: ScheduleRow[] }): Habit {
     area: isAreaId(r.area) ? r.area : DEFAULT_AREA,
     weight: r.weight,
     position: r.position,
+    goalId: r.goal_id,
     startTime: r.start_time?.slice(0, 5) ?? null,
     endTime: r.end_time?.slice(0, 5) ?? null,
     template: { frequency: toFrequency(r), target: r.target },
