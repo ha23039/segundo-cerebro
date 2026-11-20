@@ -37,6 +37,32 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"focus_sessions": {
+                  Row: {
+                    "actual_minutes": number,"created_at": string,"ended_at": string,"goal_id": string | null,"habit_id": string | null,"id": string,"kind": string,"planned_minutes": number,"started_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actual_minutes": number,"created_at"?: string,"ended_at": string,"goal_id"?: string | null,"habit_id"?: string | null,"id"?: string,"kind"?: string,"planned_minutes": number,"started_at": string,"user_id"?: string
+                  }
+                  Update: {
+                    "actual_minutes"?: number,"created_at"?: string,"ended_at"?: string,"goal_id"?: string | null,"habit_id"?: string | null,"id"?: string,"kind"?: string,"planned_minutes"?: number,"started_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "focus_sessions_goal_id_user_id_fkey"
+      columns: ["goal_id","user_id"]
+isOneToOne: false
+      referencedRelation: "goals"
+      referencedColumns: ["id","user_id"]
+    },{
+      foreignKeyName: "focus_sessions_habit_id_user_id_fkey"
+      columns: ["habit_id","user_id"]
+isOneToOne: false
+      referencedRelation: "habits"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
                 },"goals": {
                   Row: {
                     "completed_at": string | null,"created_at": string,"deleted_at": string | null,"description": string | null,"due_date": string,"id": string,"start_date": string,"status": string,"title": string,"user_id": string
