@@ -130,3 +130,20 @@ export async function reloadSaved(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle')
   await page.reload()
 }
+
+/** Siembra sesiones de foco ya terminadas (a mediodía UTC del día indicado, relativo a hoy en Madrid). */
+export async function seedFocusSessions(user: TestUser, sessions: { dayOffset: number; minutes: number; kind?: 'foco' | 'descanso' }[]): Promise<void> {
+  const rows = sessions.map((s, i) => {
+    const start = new Date(`${madridDate(s.dayOffset)}T12:${String(i).padStart(2, '0')}:00Z`)
+    return {
+      user_id: user.id,
+      kind: s.kind ?? 'foco',
+      started_at: start.toISOString(),
+      ended_at: new Date(start.getTime() + s.minutes * 60_000).toISOString(),
+      planned_minutes: s.minutes,
+      actual_minutes: s.minutes,
+    }
+  })
+  const { error } = await admin().from('focus_sessions').insert(rows)
+  if (error) throw error
+}

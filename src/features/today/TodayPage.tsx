@@ -12,6 +12,7 @@ import { PrioritiesCard } from '../dashboard/PrioritiesCard'
 import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
+import { FocusCard } from '../focus/FocusCard'
 import { dueSoon } from '../goals/domain/pace'
 import { GoalsDueCard } from '../goals/GoalsDueCard'
 import { useGoals } from '../goals/hooks'
@@ -24,12 +25,13 @@ import { useHabits, useLogs, useSetLog } from '../habits/hooks'
 import { ThemeToggle } from '../layout/ThemeToggle'
 import { useOnline } from '../layout/useOnline'
 import { useNowMinutes } from '../profile/useNowMinutes'
-import { useToday } from '../profile/useToday'
+import { useTimezone, useToday } from '../profile/useToday'
 import { useExcuseMutation, useExcuses } from '../rest/hooks'
 import { RestCard } from '../rest/RestCard'
 import { BlocksCard } from './BlocksCard'
 import { DayPicker } from './DayPicker'
 import { HabitRow } from './HabitRow'
+import '../focus/focus.css'
 import './today.css'
 
 const EMPTY: LogsByDate = new Map()
@@ -51,6 +53,7 @@ function ScoreStat({ label, value, prev, hint }: { label: string; value: number 
 
 export function TodayPage() {
   const today = useToday()
+  const timeZone = useTimezone()
   const nowMinutes = useNowMinutes()
   const online = useOnline()
   const [offset, setOffset] = useState(0)
@@ -160,6 +163,10 @@ export function TodayPage() {
         </div>
       )}
 
+      {!loading && active.length === 0 && (
+        <FocusCard habits={[]} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
+      )}
+
       {!loading && active.length > 0 && (
         <div className="dash">
           <ScoreCard day={day} isToday={offset === 0} rest={restDay} />
@@ -235,6 +242,7 @@ export function TodayPage() {
             </section>
 
             <aside className="dash-side" aria-label="Plan y progreso">
+              <FocusCard habits={active} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
               <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
               <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
               <GoalsDueCard goals={dueSoon(goals.data ?? [], today)} today={today} />

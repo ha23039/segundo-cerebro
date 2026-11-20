@@ -313,3 +313,74 @@
 .stat-cards > section {
   margin-top: 0;
 }
+
+/* Foco: minutos por día */
+.focus-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.focus-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.focus-bar-num {
+  min-height: 1em;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-bar-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 44px;
+  height: 120px;
+  border-radius: 8px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.focus-bar-fill {
+  display: block;
+  width: 100%;
+  background: var(--primary);
+}
+
+.focus-bar-day {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.focus-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.focus-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.focus-item-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

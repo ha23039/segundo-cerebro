@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router'
 import { toMessage } from '../../lib/errors'
+import { FocusView } from './FocusView'
 import { HistoryView } from './HistoryView'
 import { MonthView } from './MonthView'
 import { useStatsData } from './useStatsData'
@@ -10,6 +11,7 @@ const TABS = [
   { id: 'semana', label: 'Semana' },
   { id: 'mes', label: 'Mes' },
   { id: 'historico', label: 'Histórico' },
+  { id: 'foco', label: 'Foco' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -58,6 +60,8 @@ export function StatsPage() {
         )}
         {data.loading ? (
           <p className="muted">Cargando…</p>
+        ) : tab === 'foco' ? (
+          <FocusView data={data} />
         ) : data.habits.length === 0 ? (
           <div className="card empty-state">
             <p className="empty-title">Aún no hay datos para mostrar.</p>

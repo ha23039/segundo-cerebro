@@ -1,0 +1,70 @@
+.focus-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: 16px;
+}
+
+.focus-card p {
+  margin: 0;
+}
+
+.focus-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-fieldset legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.focus-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.focus-custom label {
+  margin: 0;
+  font-weight: 400;
+  flex: none;
+}
+
+.focus-custom input {
+  width: 96px;
+}
+
+.focus-running {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.focus-running .stat-bar {
+  width: 100%;
+}
+
+.focus-clock {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+}

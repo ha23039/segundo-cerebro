@@ -4,6 +4,11 @@ import { useProfile } from './useProfile'
 
 export const DEFAULT_TIMEZONE = 'Europe/Madrid'
 
+/** Zona horaria del perfil (la de Madrid por defecto). */
+export function useTimezone(): string {
+  return useProfile().data?.timezone ?? DEFAULT_TIMEZONE
+}
+
 /** Fecha de hoy en la zona del perfil. Se actualiza sola al pasar la medianoche o al volver a la app. */
 export function useToday(): IsoDate {
   const timezone = useProfile().data?.timezone ?? DEFAULT_TIMEZONE

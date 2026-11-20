@@ -186,3 +186,21 @@
     display: none;
   }
 }
+
+/* Aviso de foco en curso fuera de Hoy */
+.focus-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--on-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.focus-banner-time {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
