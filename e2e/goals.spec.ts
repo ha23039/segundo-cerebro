@@ -31,6 +31,10 @@ test('crear un objetivo con hitos, marcar avances y completarlo', async ({ page 
     await expect(page.getByRole('checkbox', { name: hito })).toBeVisible()
   }
   await expect(page.getByText('0 de 2 hitos hechos')).toBeVisible()
+  // Regresión: la regla global de inputs (ancho 100 %) estiraba las casillas de los hitos
+  const box = await page.getByRole('checkbox', { name: 'Correr 3 km' }).boundingBox()
+  expect(box!.width).toBeLessThanOrEqual(24)
+  expect(box!.height).toBeLessThanOrEqual(24)
 
   await mark(page, 'Correr 3 km')
   await expect(page.getByText('1 de 2 hitos hechos')).toBeVisible()

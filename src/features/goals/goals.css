@@ -140,9 +140,24 @@
 .milestone-check {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
   flex: 1;
+  min-height: var(--tap);
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* Anula la regla global de inputs (ancho 100 %, alto y relleno de campo de texto) */
+.milestone-check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  accent-color: var(--primary);
 }
 
 .milestone-check span {
