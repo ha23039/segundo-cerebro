@@ -1,5 +1,6 @@
 // Crea la cuenta única de la app. La contraseña se pide por consola (sin eco) y nunca se guarda.
 // Uso: SUPABASE_URL=... SUPABASE_SECRET_KEY=... node scripts/create-user.mjs
+// Para restaurar un respaldo, USER_ID=<id del respaldo> crea la cuenta con ese mismo id.
 import { createClient } from '@supabase/supabase-js'
 import { createInterface } from 'node:readline'
 import { validateCredentials } from './credentials.mjs'
@@ -42,7 +43,7 @@ if (problem) {
 }
 
 const admin = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true })
+const { data, error } = await admin.auth.admin.createUser({ ...(process.env.USER_ID ? { id: process.env.USER_ID } : {}), email, password, email_confirm: true })
 if (error) {
   console.error(`✗ No se pudo crear el usuario: ${error.message}`)
   process.exit(1)

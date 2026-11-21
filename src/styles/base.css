@@ -3,7 +3,8 @@
   --tap: 44px;
   --radius: 12px;
   --gap: 12px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
   font-family: var(--font);
   line-height: 1.45;
   -webkit-text-size-adjust: 100%;

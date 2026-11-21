@@ -1,7 +1,7 @@
 import { defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/config'
 
-// Fondo índigo (primary de tokens.css) para que iOS no rellene las esquinas de blanco.
-const background = '#4f46e5'
+// Fondo índigo (primary de Apex) para que iOS no rellene las esquinas de blanco.
+const background = '#047857'
 
 export default defineConfig({
   preset: {

@@ -1,4 +1,8 @@
 import { z } from 'zod'
+import { AREAS, DEFAULT_AREA, type AreaId } from './domain/areas'
+
+const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
+const timeField = z.string().regex(TIME, 'Hora no válida').optional()
 
 const FREQ_RANGE = 'Entre 1 y 7 veces por semana'
 
@@ -20,11 +24,19 @@ export const habitInputSchema = z
   .object({
     name: z.string().trim().min(1, 'Escribe un nombre').max(80, 'Máximo 80 caracteres'),
     kind: z.enum(['check', 'cantidad']),
+    weight: z.number().int().min(1, 'Entre 1 y 5').max(5, 'Entre 1 y 5').default(3),
+    area: z.enum(AREAS.map((a) => a.id) as unknown as [AreaId, ...AreaId[]]).default(DEFAULT_AREA),
     unit: z.string().trim().max(20, 'Máximo 20 caracteres').optional(),
     target: z.number().optional(),
     frequency: frequencySchema,
+    startTime: timeField,
+    endTime: timeField,
   })
   .superRefine((v, ctx) => {
+    if (v.endTime && !v.startTime) ctx.addIssue({ code: 'custom', path: ['startTime'], message: 'Indica también cuándo empieza' })
+    else if (v.endTime && v.startTime && v.endTime <= v.startTime) {
+      ctx.addIssue({ code: 'custom', path: ['endTime'], message: 'Debe terminar después de empezar' })
+    }
     if (v.kind !== 'cantidad') return
     if (!v.unit) ctx.addIssue({ code: 'custom', path: ['unit'], message: 'Escribe la unidad' })
     if (v.target === undefined || !Number.isFinite(v.target) || v.target <= 0) {
@@ -33,15 +45,16 @@ export const habitInputSchema = z
       ctx.addIssue({ code: 'custom', path: ['target'], message: 'Máximo 100000' })
     }
   })
-  .transform((v) =>
-    v.kind === 'cantidad'
-      ? v
-      : { name: v.name, kind: v.kind, frequency: v.frequency },
-  )
+  .transform((v) => {
+    const times = { startTime: v.startTime ?? null, endTime: v.endTime ?? null }
+    return v.kind === 'cantidad'
+      ? { ...v, ...times }
+      : { name: v.name, kind: v.kind, area: v.area, weight: v.weight, frequency: v.frequency, ...times }
+  })
 
 export type HabitInput = z.infer<typeof habitInputSchema>
 
-export type HabitErrors = Partial<Record<'name' | 'kind' | 'unit' | 'target' | 'frequency', string>>
+export type HabitErrors = Partial<Record<'name' | 'kind' | 'area' | 'unit' | 'target' | 'frequency' | 'startTime' | 'endTime', string>>
 
 export function validateHabit(input: unknown): { ok: true; data: HabitInput } | { ok: false; errors: HabitErrors } {
   const r = habitInputSchema.safeParse(input)

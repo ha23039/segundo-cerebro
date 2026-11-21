@@ -1,0 +1,26 @@
+/* Áreas de vida: punto de color + etiqueta (el color nunca va solo). */
+.area-dot {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.area-salud, .area-bg-salud { background: var(--area-salud); }
+.area-ejercicio, .area-bg-ejercicio { background: var(--area-ejercicio); }
+.area-estudio, .area-bg-estudio { background: var(--area-estudio); }
+.area-trabajo, .area-bg-trabajo { background: var(--area-trabajo); }
+.area-finanzas, .area-bg-finanzas { background: var(--area-finanzas); }
+.area-desarrollo, .area-bg-desarrollo { background: var(--area-desarrollo); }
+.area-espiritualidad, .area-bg-espiritualidad { background: var(--area-espiritualidad); }
+
+
+.area-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}

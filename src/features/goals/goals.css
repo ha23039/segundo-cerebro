@@ -1,0 +1,226 @@
+.goal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.goal-section {
+  margin-top: calc(var(--gap) * 1.5);
+}
+
+.goal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.goal-meta {
+  margin: 0;
+}
+
+.goal-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.goal-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  min-width: 0;
+}
+
+/* Marca del avance esperado hoy */
+.goal-bar-expected {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--text);
+}
+
+.pace-tag {
+  flex: none;
+  font-size: 0.75rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pace-tag.is-adelantado,
+.pace-tag.is-en_ritmo {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  color: var(--primary);
+}
+
+.pace-tag.is-atrasado,
+.pace-tag.is-vencido {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+  color: var(--danger);
+}
+
+.goal-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.goal-detail .page-header,
+.goal-detail h2 {
+  margin: 0;
+}
+
+.goal-detail .card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.back-link {
+  align-self: flex-start;
+}
+
+.goal-description {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.goal-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.milestone-list,
+.linked-list,
+.goals-due-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.milestone-item,
+.linked-item,
+.goals-due-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.milestone-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  min-height: var(--tap);
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* Anula la regla global de inputs (ancho 100 %, alto y relleno de campo de texto) */
+.milestone-check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+.milestone-check span {
+  overflow-wrap: anywhere;
+}
+
+.milestone-check .is-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.milestone-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.milestone-add input,
+.milestone-add select {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.goals-due-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.goals-due-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: 16px;
+}
+
+.goal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-confirm {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-trash {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-trash-title {
+  overflow-wrap: anywhere;
+}
+
+/* La regla global `section + section` añade margen: aquí el espacio lo da el gap */
+.goal-detail > section {
+  margin-top: 0;
+}

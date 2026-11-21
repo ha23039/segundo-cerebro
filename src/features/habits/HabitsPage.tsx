@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Icon } from '../../components/Icon'
 import { toMessage } from '../../lib/errors'
 import { useOnline } from '../layout/useOnline'
+import { areaLabel } from './domain/areas'
 import { frequencySummary } from './domain/format'
 import type { Habit } from './domain/types'
 import { useHabitMutations, useHabits } from './hooks'
@@ -25,6 +27,10 @@ function HabitCard({
     <li className="card habit-card">
       <div className="habit-card-info">
         <h3>{habit.name}</h3>
+        <p className="area-tag">
+          <span className={`area-dot area-${habit.area}`} aria-hidden="true" />
+          {areaLabel(habit.area)}
+        </p>
         <p className="muted">
           {frequencySummary(habit.template.frequency)}
           {habit.kind === 'cantidad' && ` · ${habit.template.target} ${habit.unit}`}
@@ -41,7 +47,7 @@ function HabitCard({
               disabled={disabled || first}
               onClick={() => actions.move.mutate({ id: habit.id, dir: 'up' })}
             >
-              <span aria-hidden="true">↑</span>
+              <Icon name="up" />
             </button>
             <button
               className="btn icon-btn"
@@ -51,7 +57,7 @@ function HabitCard({
               disabled={disabled || last}
               onClick={() => actions.move.mutate({ id: habit.id, dir: 'down' })}
             >
-              <span aria-hidden="true">↓</span>
+              <Icon name="down" />
             </button>
             <Link className="btn" to={`/habitos/${habit.id}/editar`}>
               Editar

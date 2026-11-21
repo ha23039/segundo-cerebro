@@ -43,7 +43,7 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
 /** Crea un hábito como el usuario (RPC con su sesión) y, si se pide, adelanta su inicio `backdateDays` días. */
 export async function seedHabit(
   user: TestUser,
-  habit: { name: string; kind?: 'check' | 'cantidad'; unit?: string; target?: number; days?: number[]; perWeek?: number },
+  habit: { name: string; kind?: 'check' | 'cantidad'; unit?: string; target?: number; days?: number[]; perWeek?: number; area?: string; weight?: number; startTime?: string; endTime?: string },
   backdateDays = 0,
 ): Promise<string> {
   const client = createClient(process.env.SUPABASE_URL!, process.env.VITE_SUPABASE_PUBLISHABLE_KEY!, {
@@ -60,6 +60,10 @@ export async function seedHabit(
     p_days: habit.perWeek ? null : (habit.days ?? [1, 2, 3, 4, 5, 6, 7]),
     p_times_per_week: habit.perWeek ?? null,
     p_target: kind === 'cantidad' ? (habit.target ?? 1) : null,
+    p_area: habit.area ?? 'desarrollo',
+    p_weight: habit.weight ?? 3,
+    p_start_time: habit.startTime ?? null,
+    p_end_time: habit.endTime ?? null,
   })
   if (error) throw error
   if (backdateDays > 0) {
@@ -86,4 +90,60 @@ export function lastMadridMidnight(now = new Date()): Date {
     if (fmt.format(t) === today && fmt.format(new Date(t.getTime() - 1)) !== today) return t
   }
   throw new Error('No se pudo calcular la medianoche de Madrid')
+}
+
+/** Fecha de calendario en Madrid, `offsetDays` días respecto a hoy. */
+export function madridDate(offsetDays = 0): string {
+  const base = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  const d = new Date(`${base}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + offsetDays)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Crea un objetivo con fechas controladas (inicio y límite relativos a hoy) y sus hitos. Devuelve su id. */
+export async function seedGoal(
+  user: TestUser,
+  goal: { title: string; startOffset?: number; dueOffset: number; milestones?: string[]; done?: number },
+): Promise<string> {
+  const db = admin()
+  const { data, error } = await db
+    .from('goals')
+    .insert({ user_id: user.id, title: goal.title, start_date: madridDate(goal.startOffset ?? 0), due_date: madridDate(goal.dueOffset) })
+    .select('id')
+    .single()
+  if (error) throw error
+  const titles = goal.milestones ?? []
+  if (titles.length > 0) {
+    const { error: e2 } = await db
+      .from('milestones')
+      .insert(titles.map((title, i) => ({ user_id: user.id, goal_id: data.id, title, position: i + 1, done: i < (goal.done ?? 0) })))
+    if (e2) throw e2
+  }
+  return data.id
+}
+
+/**
+ * Recarga la página una vez guardados los cambios. Los toques son optimistas: recargar justo después
+ * aborta la petición en vuelo (sobre todo con la máquina cargada) y el cambio no llega al servidor.
+ */
+export async function reloadSaved(page: Page): Promise<void> {
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+}
+
+/** Siembra sesiones de foco ya terminadas (a mediodía UTC del día indicado, relativo a hoy en Madrid). */
+export async function seedFocusSessions(user: TestUser, sessions: { dayOffset: number; minutes: number; kind?: 'foco' | 'descanso' }[]): Promise<void> {
+  const rows = sessions.map((s, i) => {
+    const start = new Date(`${madridDate(s.dayOffset)}T12:${String(i).padStart(2, '0')}:00Z`)
+    return {
+      user_id: user.id,
+      kind: s.kind ?? 'foco',
+      started_at: start.toISOString(),
+      ended_at: new Date(start.getTime() + s.minutes * 60_000).toISOString(),
+      planned_minutes: s.minutes,
+      actual_minutes: s.minutes,
+    }
+  })
+  const { error } = await admin().from('focus_sessions').insert(rows)
+  if (error) throw error
 }

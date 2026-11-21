@@ -34,5 +34,18 @@ test('sin acceso a localStorage devuelve los valores por defecto', () => {
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
     throw new Error('bloqueado')
   })
-  expect(getThemePrefs()).toEqual({ palette: 'indigo', mode: 'auto' })
+  expect(getThemePrefs()).toEqual({ palette: 'apex', mode: 'auto' })
+})
+
+test('Apex es la paleta por defecto', () => {
+  expect(document.documentElement.dataset.palette).toBe('apex')
+  expect(getThemePrefs().palette).toBe('apex')
+})
+
+test('se puede volver a Índigo y a Apex', () => {
+  setPalette('indigo')
+  expect(document.documentElement.dataset.palette).toBe('indigo')
+  setPalette('apex')
+  expect(document.documentElement.dataset.palette).toBe('apex')
+  expect(getThemePrefs().palette).toBe('apex')
 })
