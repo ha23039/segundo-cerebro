@@ -123,29 +123,6 @@ export function FocusCard({ habits, goals, today, timeZone }: Props) {
                   </button>
                 ))}
               </div>
-              <div className="focus-custom">
-                <label htmlFor="focus-minutes">Otros minutos</label>
-                <input
-                  id="focus-minutes"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={MAX_MINUTES}
-                  value={prefs.focusMinutes}
-                  onChange={(e) => update({ focusMinutes: e.target.value === '' ? 0 : clampMinutes(Number(e.target.value)) })}
-                />
-              </div>
-            </fieldset>
-
-            <fieldset className="focus-fieldset">
-              <legend>Duración del descanso</legend>
-              <div className="pills" role="group" aria-label="Minutos de descanso">
-                {BREAK_PRESETS.map((m) => (
-                  <button key={m} type="button" className="pill" aria-pressed={prefs.breakMinutes === m} onClick={() => update({ breakMinutes: m })}>
-                    {m} min
-                  </button>
-                ))}
-              </div>
             </fieldset>
 
             {(habits.length > 0 || goals.length > 0) && (
@@ -174,6 +151,36 @@ export function FocusCard({ habits, goals, today, timeZone }: Props) {
                 </select>
               </div>
             )}
+
+            <details className="focus-more">
+              <summary>
+                Ajustes · {prefs.focusMinutes} min de foco, {prefs.breakMinutes} de descanso
+              </summary>
+              <div className="focus-more-body">
+                <div className="focus-custom">
+                  <label htmlFor="focus-minutes">Otros minutos</label>
+                  <input
+                    id="focus-minutes"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={MAX_MINUTES}
+                    value={prefs.focusMinutes}
+                    onChange={(e) => update({ focusMinutes: e.target.value === '' ? 0 : clampMinutes(Number(e.target.value)) })}
+                  />
+                </div>
+                <fieldset className="focus-fieldset">
+                  <legend>Duración del descanso</legend>
+                  <div className="pills" role="group" aria-label="Minutos de descanso">
+                    {BREAK_PRESETS.map((m) => (
+                      <button key={m} type="button" className="pill" aria-pressed={prefs.breakMinutes === m} onClick={() => update({ breakMinutes: m })}>
+                        {m} min
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+            </details>
 
             {error && (
               <p role="alert" className="error small">
