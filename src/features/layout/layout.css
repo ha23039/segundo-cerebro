@@ -193,10 +193,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+  color: var(--text);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
   text-decoration: none;
   font-weight: 600;
+}
+
+.focus-banner-time {
+  color: var(--primary);
 }
 
 .focus-banner-time {
