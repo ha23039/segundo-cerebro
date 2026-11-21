@@ -830,7 +830,7 @@
 
 /* Apex en oscuro: tarjeta de puntuación sobria (superficie + acento), como en APEX */
 @media (prefers-color-scheme: dark) {
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero {
+  :root:not([data-theme="light"]) .hero {
     background: var(--surface);
     color: var(--text);
     border: 1px solid var(--border);
@@ -838,36 +838,36 @@
   }
 }
 
-:root[data-palette="apex"][data-theme="dark"] .hero {
+:root[data-theme="dark"] .hero {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   box-shadow: none;
 }
 
-:root[data-palette="apex"][data-theme="dark"] .hero::after,
-:root[data-palette="apex"][data-theme="dark"] .hero .ring-track,
-:root[data-palette="apex"][data-theme="dark"] .hero-bar {
+:root[data-theme="dark"] .hero::after,
+:root[data-theme="dark"] .hero .ring-track,
+:root[data-theme="dark"] .hero-bar {
   background: none;
 }
 
-:root[data-palette="apex"][data-theme="dark"] .hero .ring-track { stroke: var(--border); }
-:root[data-palette="apex"][data-theme="dark"] .hero .ring-value { stroke: var(--primary); }
-:root[data-palette="apex"][data-theme="dark"] .hero-ring-text strong { color: var(--primary); }
-:root[data-palette="apex"][data-theme="dark"] .hero-bar { background: var(--border); }
-:root[data-palette="apex"][data-theme="dark"] .hero-bar span { background: var(--primary); }
-:root[data-palette="apex"][data-theme="dark"] .hero-eyebrow,
-:root[data-palette="apex"][data-theme="dark"] .hero-note { color: var(--muted); opacity: 1; }
+:root[data-theme="dark"] .hero .ring-track { stroke: var(--border); }
+:root[data-theme="dark"] .hero .ring-value { stroke: var(--primary); }
+:root[data-theme="dark"] .hero-ring-text strong { color: var(--primary); }
+:root[data-theme="dark"] .hero-bar { background: var(--border); }
+:root[data-theme="dark"] .hero-bar span { background: var(--primary); }
+:root[data-theme="dark"] .hero-eyebrow,
+:root[data-theme="dark"] .hero-note { color: var(--muted); opacity: 1; }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero::after { background: none; }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero .ring-track { stroke: var(--border); }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero .ring-value { stroke: var(--primary); }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero-ring-text strong { color: var(--primary); }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero-bar { background: var(--border); }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero-bar span { background: var(--primary); }
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero-eyebrow,
-  :root[data-palette="apex"]:not([data-theme="light"]) .hero-note { color: var(--muted); opacity: 1; }
+  :root:not([data-theme="light"]) .hero::after { background: none; }
+  :root:not([data-theme="light"]) .hero .ring-track { stroke: var(--border); }
+  :root:not([data-theme="light"]) .hero .ring-value { stroke: var(--primary); }
+  :root:not([data-theme="light"]) .hero-ring-text strong { color: var(--primary); }
+  :root:not([data-theme="light"]) .hero-bar { background: var(--border); }
+  :root:not([data-theme="light"]) .hero-bar span { background: var(--primary); }
+  :root:not([data-theme="light"]) .hero-eyebrow,
+  :root:not([data-theme="light"]) .hero-note { color: var(--muted); opacity: 1; }
 }
 
 /* ===== Descanso y omisiones ===== */
