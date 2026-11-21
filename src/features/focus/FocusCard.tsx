@@ -67,7 +67,7 @@ export function FocusCard({ habits, goals, today, timeZone }: Props) {
     : null
 
   return (
-    <section className="card focus-card" aria-labelledby={titleId}>
+    <section id="foco" className="card focus-card" aria-labelledby={titleId}>
       <div className="card-head">
         <h2 id={titleId}>Foco</h2>
         <span className="muted small">

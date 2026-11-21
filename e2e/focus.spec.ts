@@ -121,3 +121,14 @@ test('sin sesiones, estado vacío; a 320 px no desborda', async ({ page }) => {
   await expect(page.getByText('Aún no hay sesiones de foco.')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
 })
+
+test('el botón Foco de un hábito empieza el temporizador asociado y se oculta mientras corre', async ({ page }) => {
+  await seedHabit(user, { name: 'Estudiar' })
+  await login(page, user)
+
+  await page.getByRole('button', { name: 'Foco', exact: true }).click()
+  await expect(card(page).getByRole('timer')).toHaveText(/^2[45]:\d\d$/)
+  await expect(card(page)).toContainText('Foco · Estudiar')
+  await expect(page.getByRole('button', { name: 'Foco', exact: true })).toHaveCount(0)
+  await expectNoA11yViolations(page)
+})

@@ -12,7 +12,9 @@ import { PrioritiesCard } from '../dashboard/PrioritiesCard'
 import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
+import { useAuth } from '../auth/useAuth'
 import { FocusCard } from '../focus/FocusCard'
+import { loadPrefs, useActiveTimer } from '../focus/timerStore'
 import { dueSoon } from '../goals/domain/pace'
 import { GoalsDueCard } from '../goals/GoalsDueCard'
 import { useGoals } from '../goals/hooks'
@@ -54,6 +56,16 @@ function ScoreStat({ label, value, prev, hint }: { label: string; value: number 
 export function TodayPage() {
   const today = useToday()
   const timeZone = useTimezone()
+  const { session } = useAuth()
+  const userId = session?.user.id ?? ''
+  const { timer, start } = useActiveTimer(userId || null)
+
+  function startFocus(habitId: string) {
+    start({ kind: 'foco', plannedMinutes: loadPrefs(userId).focusMinutes, habitId, goalId: null })
+    const card = document.getElementById('foco')
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.setTimeout(() => card?.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' }), 50)
+  }
   const nowMinutes = useNowMinutes()
   const online = useOnline()
   const [offset, setOffset] = useState(0)
@@ -228,6 +240,7 @@ export function TodayPage() {
                         disabled={!online}
                         skip={skipOf(ex, h.id, date)}
                         rest={restDay !== null}
+                        onFocus={date === today && timer === null && userId ? () => startFocus(h.id) : undefined}
                         onSet={(v) => setLog.mutate({ habitId: h.id, date, value: v })}
                         onSkip={(reason) =>
                           changeExcuse.mutate(

@@ -19,6 +19,8 @@ interface Props {
   rest: boolean
   onSet(value: number | null): void
   onSkip(reason: SkipReason | null): void
+  /** Empieza un foco asociado a este hábito; solo se ofrece si se puede (hoy, sin temporizador en marcha). */
+  onFocus?: () => void
 }
 
 const MAX = 100000
@@ -103,6 +105,14 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Pick<Props, 
   )
 }
 
+function FocusButton({ nameId, onClick }: { nameId: string; onClick(): void }) {
+  return (
+    <button type="button" className="btn icon-btn ghost skip-btn" aria-label="Foco" aria-describedby={nameId} title="Empezar un foco con este hábito" onClick={onClick}>
+      <Icon name="clock" />
+    </button>
+  )
+}
+
 function SkipPicker({ habit, onPick, onCancel }: { habit: Habit; onPick(r: SkipReason): void; onCancel(): void }) {
   return (
     <div className="skip-picker" role="group" aria-label={`Motivo para omitir ${habit.name}`}>
@@ -134,7 +144,7 @@ function SkipButton({ nameId, disabled, onClick }: { nameId: string; disabled: b
 
 /** Fila de hábito al estilo APEX: casilla, estado, progreso parcial y área; se puede omitir con motivo. */
 export function HabitRow(props: Props) {
-  const { habit, period, value, done, streak, disabled, skip, rest, onSet, onSkip } = props
+  const { habit, period, value, done, streak, disabled, skip, rest, onSet, onSkip, onFocus } = props
   const [picking, setPicking] = useState(false)
   const nameId = useId()
   const canSkip = !done && !rest && !disabled
@@ -177,6 +187,7 @@ export function HabitRow(props: Props) {
             <Side habit={habit} streak={streak} />
           </span>
         </button>
+        {onFocus && !done && !picking && <FocusButton nameId={nameId} onClick={onFocus} />}
         {canSkip && !picking && <SkipButton nameId={nameId} disabled={disabled} onClick={() => setPicking(true)} />}
         {picking && <SkipPicker habit={habit} onPick={pick} onCancel={() => setPicking(false)} />}
       </li>
@@ -194,6 +205,7 @@ export function HabitRow(props: Props) {
           <span className="today-meta">{done ? 'Meta cumplida' : optional ? `Opcional hoy · ${pct} %` : `${pct} % de la meta`}</span>
           <Side habit={habit} streak={streak} />
         </span>
+        {onFocus && !done && !picking && <FocusButton nameId={nameId} onClick={onFocus} />}
         {canSkip && !picking && <SkipButton nameId={nameId} disabled={disabled} onClick={() => setPicking(true)} />}
       </div>
       <div className="today-progress" aria-hidden="true">
