@@ -16,6 +16,13 @@ export function todayIn(timeZone: string, now: Date = new Date()): IsoDate {
   }).format(now)
 }
 
+/** Minutos desde la medianoche de `now` en la zona indicada (0..1439). */
+export function minutesIn(timeZone: string, now: Date = new Date()): number {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now)
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0)
+  return get('hour') * 60 + get('minute')
+}
+
 // Las fechas de calendario se operan en UTC para que el horario de verano no afecte.
 function toUtcMs(date: IsoDate): number {
   const [y, m, d] = date.split('-').map(Number)

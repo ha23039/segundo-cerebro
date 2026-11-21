@@ -1,0 +1,61 @@
+.journal-page, .note-page { display: flex; flex-direction: column; gap: 16px; }
+.journal-page > h1, .note-page > h1 { margin: 0; }
+.journal, .notes { display: flex; flex-direction: column; gap: 16px; }
+.journal-page [role="tabpanel"] { display: flex; flex-direction: column; }
+
+.journal-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.journal-date { margin: 0; font-weight: 600; text-align: center; flex: 1; }
+.journal-nav .is-disabled { opacity: 0.35; pointer-events: none; }
+
+.journal-editor { display: flex; flex-direction: column; gap: 10px; }
+.journal-editor label { margin: 0; }
+.journal-editor textarea, .note-form textarea { width: 100%; resize: vertical; line-height: 1.5; }
+.journal-foot { display: flex; justify-content: space-between; align-items: center; min-height: 20px; }
+.journal-editor .row, .note-form .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.journal-list-wrap > h2 { margin: 0 0 8px; }
+.journal-list, .note-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.journal-item, .note-item { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--text); }
+.journal-item[aria-current="true"] { border-color: var(--primary); }
+.journal-item-date { font-weight: 600; text-transform: capitalize; font-size: 0.9rem; }
+.journal-item-text, .note-item-text, .diary-card-text {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  color: var(--muted); overflow-wrap: anywhere; white-space: pre-line;
+}
+.diary-card { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.diary-card p { margin: 0; }
+.diary-card .card-head { align-self: stretch; }
+
+.notes-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.notes-search { flex: 1 1 180px; min-width: 0; }
+.notes-search input { width: 100%; }
+.note-tags { flex-wrap: wrap; }
+.note-item-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.note-item-title { font-weight: 600; overflow-wrap: anywhere; }
+.note-pin { font-size: 0.75rem; color: var(--primary); border: 1px solid var(--primary); border-radius: 999px; padding: 1px 8px; flex: none; }
+.note-item-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tag { font-size: 0.78rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; }
+.note-trash > h2 { margin: 8px 0 0; }
+
+.note-form { display: flex; flex-direction: column; gap: 16px; }
+.note-form label { margin-bottom: 6px; }
+.note-form .note-pin-field { display: flex; align-items: center; gap: 10px; font-weight: 400; margin: 0; min-height: var(--tap); }
+.note-form .note-pin-field input { width: 22px; min-height: 0; height: 22px; flex: none; }
+.note-body-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.note-body-head label { margin: 0; }
+.note-preview { min-height: 200px; }
+
+.markdown { overflow-wrap: anywhere; line-height: 1.6; }
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+.markdown h1, .markdown h2, .markdown h3, .markdown h4 { margin: 1.2em 0 0.4em; line-height: 1.25; }
+.markdown h1 { font-size: 1.4rem; } .markdown h2 { font-size: 1.2rem; } .markdown h3, .markdown h4 { font-size: 1.05rem; }
+.markdown p, .markdown ul, .markdown ol, .markdown pre, .markdown blockquote, .markdown table { margin: 0 0 0.8em; }
+.markdown a { color: var(--primary); }
+.markdown code { font-family: var(--font-mono); font-size: 0.9em; background: color-mix(in srgb, var(--muted) 15%, transparent); padding: 1px 5px; border-radius: 6px; }
+.markdown pre { overflow-x: auto; padding: 12px; border-radius: 10px; background: color-mix(in srgb, var(--muted) 12%, transparent); }
+.markdown pre code { background: none; padding: 0; }
+.markdown blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--muted); }
+.markdown table { border-collapse: collapse; display: block; overflow-x: auto; }
+.markdown th, .markdown td { border: 1px solid var(--border); padding: 4px 8px; }
+.markdown hr { border: 0; border-top: 1px solid var(--border); }

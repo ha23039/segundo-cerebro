@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { toMessage } from '../../lib/errors'
 import { getThemePrefs, setMode, setPalette, type Mode, type Palette } from '../../lib/theme'
 import { useAuth } from '../auth/useAuth'
+import { ExportCard } from '../export/ExportCard'
 import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
@@ -10,6 +12,7 @@ import { TrashSection } from './TrashSection'
 import '../habits/habits.css'
 
 const PALETTES: { value: Palette; label: string }[] = [
+  { value: 'apex', label: 'Apex' },
   { value: 'indigo', label: 'Índigo' },
   { value: 'oceano', label: 'Océano' },
 ]
@@ -103,6 +106,21 @@ export function SettingsPage() {
           </p>
         )}
       </section>
+
+      <section className="stack" aria-labelledby="escritura">
+        <h2 id="escritura">Diario y notas</h2>
+        <p className="muted">Tu entrada de cada día y tus notas en Markdown.</p>
+        <div className="row">
+          <Link className="btn" to="/diario">
+            Abrir el diario
+          </Link>
+          <Link className="btn" to="/diario?vista=notas">
+            Abrir las notas
+          </Link>
+        </div>
+      </section>
+
+      <ExportCard />
 
       <TrashSection />
 

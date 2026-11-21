@@ -4,10 +4,16 @@ import { AuthProvider } from './features/auth/AuthProvider'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { useAuth } from './features/auth/useAuth'
+import { GoalPage } from './features/goals/GoalPage'
+import { GoalsPage } from './features/goals/GoalsPage'
+import { JournalPage } from './features/journal/JournalPage'
+import { NotePage } from './features/journal/NotePage'
 import { HabitEditPage } from './features/habits/HabitEditPage'
 import { HabitsPage } from './features/habits/HabitsPage'
 import { AppShell } from './features/layout/AppShell'
+import { ReportPage } from './features/report/ReportPage'
 import { RouteErrorView } from './features/layout/RouteError'
+import { StatsPage } from './features/stats/StatsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TodayPage } from './features/today/TodayPage'
 import { AppQueryProvider } from './lib/AppQueryProvider'
@@ -26,6 +32,12 @@ const router = createBrowserRouter([
       { path: 'habitos', element: <HabitsPage /> },
       { path: 'habitos/nuevo', element: <HabitEditPage /> },
       { path: 'habitos/:id/editar', element: <HabitEditPage /> },
+      { path: 'objetivos', element: <GoalsPage /> },
+      { path: 'objetivos/:id', element: <GoalPage /> },
+      { path: 'estadisticas', element: <StatsPage /> },
+      { path: 'diario', element: <JournalPage /> },
+      { path: 'notas/:id', element: <NotePage /> },
+      { path: 'informe', element: <ReportPage /> },
       { path: 'ajustes', element: <SettingsPage /> },
     ],
   },

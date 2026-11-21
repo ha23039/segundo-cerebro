@@ -1,4 +1,4 @@
-export type Palette = 'indigo' | 'oceano'
+export type Palette = 'apex' | 'indigo' | 'oceano'
 export type Mode = 'light' | 'dark' | 'auto'
 
 // Mismas claves que usa public/theme.js
@@ -11,7 +11,8 @@ function read(key: string): string | null {
 }
 
 export function getThemePrefs(): { palette: Palette; mode: Mode } {
-  const palette = read('palette') === 'oceano' ? 'oceano' : 'indigo'
+  const stored = read('palette')
+  const palette: Palette = stored === 'indigo' || stored === 'oceano' ? stored : 'apex'
   const theme = read('theme')
   const mode = theme === 'light' || theme === 'dark' ? theme : 'auto'
   return { palette, mode }

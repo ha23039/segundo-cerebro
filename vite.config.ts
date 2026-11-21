@@ -19,9 +19,9 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/',
         scope: '/',
-        // Metadatos del manifest (no CSS): índigo claro de tokens.css
-        theme_color: '#f5f6f8',
-        background_color: '#f5f6f8',
+        // Metadatos del manifest (no CSS): Apex claro de tokens-extra.css
+        theme_color: '#f4f6f5',
+        background_color: '#f4f6f5',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

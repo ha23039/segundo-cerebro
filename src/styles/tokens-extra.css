@@ -8,11 +8,72 @@
 /* ---- Oscuro por preferencia del sistema ---- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --danger: #f87171;
+    --danger: #f08c8c;
   }
 }
 
 /* ---- Oscuro por elección explícita ---- */
 :root[data-theme="dark"] {
-  --danger: #f87171;
+  --danger: #f08c8c;
+}
+
+/* ---- Áreas de vida (categórico validado: CVD y contraste; siempre con etiqueta de texto) ---- */
+:root {
+  --area-estudio: #2a78d6;
+  --area-ejercicio: #eb6834;
+  --area-salud: #1baf7a;
+  --area-finanzas: #eda100;
+  --area-desarrollo: #e87ba4;
+  --area-espiritualidad: #008300;
+  --area-trabajo: #6250d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --area-estudio: #3987e5;
+    --area-ejercicio: #d95926;
+    --area-salud: #199e70;
+    --area-finanzas: #c98500;
+    --area-desarrollo: #d55181;
+    --area-espiritualidad: #008300;
+    --area-trabajo: #9085e9;
+  }
+}
+
+:root[data-theme="dark"] {
+  --area-estudio: #3987e5;
+  --area-ejercicio: #d95926;
+  --area-salud: #199e70;
+  --area-finanzas: #c98500;
+  --area-desarrollo: #d55181;
+  --area-espiritualidad: #008300;
+  --area-trabajo: #9085e9;
+}
+
+/* ---- Paleta Apex (verde esmeralda sobre neutros verdosos). Por defecto. ----
+   Mayor especificidad que tokens.css para ganar tanto en claro como en oscuro. */
+:root[data-palette="apex"] {
+  --bg:#f4f6f5; --surface:#ffffff; --text:#0f1512; --muted:#56605a; --border:#dde3df;
+  --primary:#047857; --on-primary:#ffffff; --ok:#15803d;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="apex"]:not([data-theme="light"]) {
+    --bg:#101312; --surface:#181c1a; --text:#e2e7e4; --muted:#a1aba5; --border:#2a302d;
+    --primary:#5ccfa4; --on-primary:#08180f; --ok:#5ccfa4; color-scheme: dark;
+  }
+}
+
+:root[data-palette="apex"][data-theme="dark"] {
+  --bg:#101312; --surface:#181c1a; --text:#e2e7e4; --muted:#a1aba5; --border:#2a302d;
+  --primary:#5ccfa4; --on-primary:#08180f; --ok:#5ccfa4; color-scheme: dark;
+}
+
+/* ---- Impresión: siempre claro y sin color de acento, sea cual sea el tema (más específico que las paletas) ---- */
+@media print {
+  :root:root:root:root {
+    --bg:#ffffff; --surface:#ffffff; --text:#000000; --muted:#444444; --border:#bbbbbb;
+    --primary:#000000; --on-primary:#ffffff; color-scheme: light;
+  }
 }
