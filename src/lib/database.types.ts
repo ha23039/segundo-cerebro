@@ -157,6 +157,20 @@ isOneToOne: false
       referencedColumns: ["id","user_id"]
     }
                   ]
+                },"journal_entries": {
+                  Row: {
+                    "body": string,"created_at": string,"entry_date": string,"id": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"entry_date": string,"id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"entry_date"?: string,"id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"milestones": {
                   Row: {
                     "created_at": string,"done": boolean,"done_at": string | null,"goal_id": string,"id": string,"position": number,"title": string,"user_id": string
@@ -176,6 +190,20 @@ isOneToOne: false
       referencedRelation: "goals"
       referencedColumns: ["id","user_id"]
     }
+                  ]
+                },"notes": {
+                  Row: {
+                    "body": string,"created_at": string,"deleted_at": string | null,"id": string,"pinned": boolean,"search": unknown,"tags": (string)[],"title": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"pinned"?: boolean,"search"?: never,"tags"?: (string)[],"title": string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"pinned"?: boolean,"search"?: never,"tags"?: (string)[],"title"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"profiles": {
                   Row: {
