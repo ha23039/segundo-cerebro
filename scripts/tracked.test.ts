@@ -17,6 +17,9 @@ test('detecta archivos locales y secretos rastreados', () => {
       'dist/index.html',
       'signing_keys.json',
       '.DS_Store',
+      'backup-2026-11-22.tar.gz.age',
+      'backup-2026-11-22.tar.gz',
+      'segundo-cerebro-2026-11-22.json',
     ]),
   ).toEqual([
     '.env.local',
@@ -31,6 +34,9 @@ test('detecta archivos locales y secretos rastreados', () => {
     'dist/index.html',
     'signing_keys.json',
     '.DS_Store',
+    'backup-2026-11-22.tar.gz.age',
+    'backup-2026-11-22.tar.gz',
+    'segundo-cerebro-2026-11-22.json',
   ])
 })
 

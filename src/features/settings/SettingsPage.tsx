@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { toMessage } from '../../lib/errors'
 import { getThemePrefs, setMode, setPalette, type Mode, type Palette } from '../../lib/theme'
 import { useAuth } from '../auth/useAuth'
+import { ExportCard } from '../export/ExportCard'
 import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
@@ -118,6 +119,8 @@ export function SettingsPage() {
           </Link>
         </div>
       </section>
+
+      <ExportCard />
 
       <TrashSection />
 

@@ -9,6 +9,9 @@ const FORBIDDEN = [
   /(^|\/)signing_keys\.json$/,
   /(^|\/)\.DS_Store$/,
   /\.(sqlite|sqlite-shm|sqlite-wal|pem|key)$/,
+  /\.age$/, // respaldos cifrados
+  /(^|\/)backup-[^/]*\.(tar\.gz|sql|zip)$/, // respaldos sin cifrar
+  /(^|\/)segundo-cerebro-\d{4}-\d{2}-\d{2}\.(json|zip)$/, // exportaciones de datos
 ]
 const ALLOWED = [/^\.env\.example$/]
 

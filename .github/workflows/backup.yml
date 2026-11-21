@@ -1,0 +1,78 @@
+name: Respaldo semanal
+
+# Cada domingo a las 03:00 UTC: volcado de la base de datos (esquema + datos de `public`), cifrado con age
+# y subida a Cloudflare R2. Conserva las 12 últimas copias. También se puede lanzar a mano (Actions -> Run workflow).
+# Secretos necesarios (Settings -> Secrets and variables -> Actions); la guía está en docs/respaldo.md:
+#   SUPABASE_DB_URL, AGE_RECIPIENT, R2_ENDPOINT, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      AGE_RECIPIENT: ${{ secrets.AGE_RECIPIENT }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Comprobar que están todos los secretos
+        run: |
+          missing=0
+          for v in SUPABASE_DB_URL AGE_RECIPIENT R2_ENDPOINT R2_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::Falta el secreto $v (ver docs/respaldo.md)"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Volcar esquema y datos
+        run: |
+          set -euo pipefail
+          mkdir pack
+          npx supabase db dump --db-url "$SUPABASE_DB_URL" -s public -f pack/schema.sql
+          npx supabase db dump --db-url "$SUPABASE_DB_URL" -s public --data-only --use-copy -f pack/data.sql
+          # Un volcado vacío o truncado nunca debe sustituir a una copia buena
+          grep -q '^COPY "public"."habits"' pack/data.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS "public"."habits"' pack/schema.sql
+          tar -czf backup.tar.gz -C pack schema.sql data.sql
+          ls -l backup.tar.gz
+
+      - name: Cifrar con age
+        run: node scripts/backup/encrypt.mjs backup.tar.gz backup.tar.gz.age
+
+      - name: Subir a R2 y conservar las 12 últimas
+        run: |
+          set -euo pipefail
+          KEY="$(node -e "import('./scripts/backup/lib.mjs').then(m => console.log(m.backupKey()))")"
+          aws s3 cp backup.tar.gz.age "s3://$R2_BUCKET/$KEY" --endpoint-url "$R2_ENDPOINT"
+          aws s3api head-object --bucket "$R2_BUCKET" --key "$KEY" --endpoint-url "$R2_ENDPOINT" > /dev/null
+          aws s3api list-objects-v2 --bucket "$R2_BUCKET" --prefix backup- --endpoint-url "$R2_ENDPOINT" \
+            | node scripts/backup/prune.mjs 12 \
+            | while read -r old; do
+                echo "Borrando copia antigua: $old"
+                aws s3api delete-object --bucket "$R2_BUCKET" --key "$old" --endpoint-url "$R2_ENDPOINT"
+              done
+          echo "Respaldo subido: $KEY"

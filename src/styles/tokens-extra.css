@@ -69,3 +69,11 @@
   --bg:#101312; --surface:#181c1a; --text:#e2e7e4; --muted:#a1aba5; --border:#2a302d;
   --primary:#5ccfa4; --on-primary:#08180f; --ok:#5ccfa4; color-scheme: dark;
 }
+
+/* ---- Impresión: siempre claro y sin color de acento, sea cual sea el tema (más específico que las paletas) ---- */
+@media print {
+  :root:root:root:root {
+    --bg:#ffffff; --surface:#ffffff; --text:#000000; --muted:#444444; --border:#bbbbbb;
+    --primary:#000000; --on-primary:#ffffff; color-scheme: light;
+  }
+}

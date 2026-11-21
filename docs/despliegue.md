@@ -99,6 +99,7 @@ Al cerrar cada fase te indicaré si hay pasos extra.
 |---|---|
 | F0 | Despliegue inicial completo (pasos 1 a 5). |
 | F1 | Ninguno: `db push` activa solo las extensiones `btree_gist` y `pg_cron` y programa la purga diaria de la papelera (03:15 UTC). Puedes comprobarla en el panel → **Integrations → Cron**. |
+| F6 | Opcional pero recomendado: configurar el respaldo semanal (R2, claves age y secretos de GitHub) siguiendo `docs/respaldo.md`. No hay migraciones nuevas. |
 | MVP APEX | Ninguno: `db push` añade áreas, importancia, prioridades, días de descanso (`rest_days`), omisiones justificadas (`habit_skips`) y bloques horarios de los hábitos (`start_time`/`end_time`), objetivos con hitos (`goals`, `milestones`, `habits.goal_id`; purga de la papelera con pg_cron) sesiones de foco (`focus_sessions`) y diario y notas (`journal_entries`, `notes`; purga de la papelera de notas con pg_cron). Las tablas nuevas llevan RLS. |
 
 ## Problemas frecuentes

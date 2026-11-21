@@ -70,6 +70,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - Script de restauración documentado y probado contra Supabase local.
 - En Ajustes: "Descargar mis datos" en JSON y CSV (solo exportar, sin importar en la app).
 - Informe imprimible (semana / mes / histórico) con CSS de impresión, para guardarlo como PDF desde iOS.
+- **Cómo se resuelve** *(decisión de Claude, 2026-11-21)*: el respaldo semanal lleva el esquema `public` completo (esquema + datos), sin tablas de `auth` (ni sesiones ni contraseñas); la restauración exige una base vacía con el esquema aplicado y la cuenta creada con el mismo id (`USER_ID`), y es transaccional. Se cifra con age (clave pública en GitHub, privada solo en el gestor del usuario) y se sube a R2 (conserva 12). «Tus datos» en Ajustes exporta las 12 tablas en JSON o en un zip de CSV generados en el dispositivo (CSV con BOM y protección contra fórmulas). El informe imprimible (`/informe`) cubre esta semana, este mes, el mes anterior o todo el historial, y la impresión siempre es clara. Guía completa en `docs/respaldo.md`.
 
 ## Seguridad y calidad (aplica a todas las fases)
 - RLS activado en todas las tablas, con tests de que otro usuario no ve ni escribe datos ajenos.

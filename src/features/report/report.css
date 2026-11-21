@@ -1,0 +1,33 @@
+.report { display: flex; flex-direction: column; gap: 16px; }
+.report-controls { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.report-controls h1 { margin: 0; }
+.report-controls > div { align-self: stretch; }
+
+.report-sheet { min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+.report-sheet h2, .report-sheet h3, .report-sheet p { margin: 0; }
+.report-sheet h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.report-brand { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px; margin: 0; }
+.report-summary > div { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.report-summary > div { min-width: 0; }
+.report-summary dt { font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; }
+.report-summary dd { margin: 0; }
+.report-summary dd:nth-of-type(1) { font-size: 1.4rem; font-weight: 700; }
+
+.report-table-wrap { overflow-x: auto; }
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.report-table th, .report-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.report-table thead th { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+.report-table tbody th { font-weight: 600; overflow-wrap: anywhere; }
+.report-table .num { text-align: right; white-space: nowrap; }
+.report-goals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.report-goals li { display: flex; flex-direction: column; gap: 2px; }
+
+@media print {
+  @page { margin: 14mm; }
+  body { background: var(--bg); color: var(--text); }
+  .bottom-nav, .sidebar, .offline-banner, .focus-banner, .no-print { display: none !important; }
+  .shell, .shell-main, .page { display: block; padding: 0; margin: 0; max-width: none; }
+  .report-sheet { border: 0; padding: 0; border-radius: 0; }
+  .report-table tr, .report-summary > div, .report-goals li { break-inside: avoid; }
+}
