@@ -174,9 +174,9 @@ export function HabitRow(props: Props) {
           <span className="today-main">
             <span className="today-name" id={nameId}>{habit.name}</span>
             <span className="today-meta">{done ? 'Hecho' : optional ? 'Opcional hoy' : 'Pendiente'}</span>
+            <Side habit={habit} streak={streak} />
           </span>
         </button>
-        <Side habit={habit} streak={streak} />
         {canSkip && !picking && <SkipButton nameId={nameId} disabled={disabled} onClick={() => setPicking(true)} />}
         {picking && <SkipPicker habit={habit} onPick={pick} onCancel={() => setPicking(false)} />}
       </li>
@@ -192,8 +192,8 @@ export function HabitRow(props: Props) {
         <span className="today-main">
           <span className="today-name" id={nameId}>{habit.name}</span>
           <span className="today-meta">{done ? 'Meta cumplida' : optional ? `Opcional hoy · ${pct} %` : `${pct} % de la meta`}</span>
+          <Side habit={habit} streak={streak} />
         </span>
-        <Side habit={habit} streak={streak} />
         {canSkip && !picking && <SkipButton nameId={nameId} disabled={disabled} onClick={() => setPicking(true)} />}
       </div>
       <div className="today-progress" aria-hidden="true">

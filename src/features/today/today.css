@@ -1139,3 +1139,25 @@
   border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
   color: var(--primary);
 }
+
+/* ===== Fila de hábito: área y racha bajo el nombre (en móvil el nombre ocupa todo el ancho) ===== */
+.today-main .today-side {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  margin-top: 2px;
+  font-size: 0.8rem;
+}
+
+.today-main .area-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.today-main .streak {
+  font-size: 0.8rem;
+}
