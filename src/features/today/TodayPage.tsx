@@ -13,6 +13,7 @@ import { ScoreCard } from '../dashboard/ScoreCard'
 import { WeekChart } from '../dashboard/WeekChart'
 import { AREAS } from '../habits/domain/areas'
 import { useAuth } from '../auth/useAuth'
+import { DiaryCard } from '../journal/DiaryCard'
 import { FocusCard } from '../focus/FocusCard'
 import { loadPrefs, useActiveTimer } from '../focus/timerStore'
 import { dueSoon } from '../goals/domain/pace'
@@ -176,7 +177,10 @@ export function TodayPage() {
       )}
 
       {!loading && active.length === 0 && (
-        <FocusCard habits={[]} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
+        <>
+          <FocusCard habits={[]} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
+          {offset === 0 && <DiaryCard today={today} />}
+        </>
       )}
 
       {!loading && active.length > 0 && (
@@ -259,6 +263,7 @@ export function TodayPage() {
               <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
               <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
               <GoalsDueCard goals={dueSoon(goals.data ?? [], today)} today={today} />
+              {offset === 0 && <DiaryCard today={today} />}
               <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
               {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
               {stats && <AreaBreakdown stats={stats.areas} />}

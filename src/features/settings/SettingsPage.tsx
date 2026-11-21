@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { toMessage } from '../../lib/errors'
 import { getThemePrefs, setMode, setPalette, type Mode, type Palette } from '../../lib/theme'
 import { useAuth } from '../auth/useAuth'
@@ -103,6 +104,19 @@ export function SettingsPage() {
             {toMessage(updateTimezone.error)}
           </p>
         )}
+      </section>
+
+      <section className="stack" aria-labelledby="escritura">
+        <h2 id="escritura">Diario y notas</h2>
+        <p className="muted">Tu entrada de cada día y tus notas en Markdown.</p>
+        <div className="row">
+          <Link className="btn" to="/diario">
+            Abrir el diario
+          </Link>
+          <Link className="btn" to="/diario?vista=notas">
+            Abrir las notas
+          </Link>
+        </div>
       </section>
 
       <TrashSection />
