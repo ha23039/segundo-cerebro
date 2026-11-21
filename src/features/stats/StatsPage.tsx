@@ -25,7 +25,7 @@ export function StatsPage() {
 
   return (
     <div className="stats">
-      <h1>Estadísticas</h1>
+      <h1>Progreso</h1>
       <div className="stats-tabs" role="tablist" aria-label="Vista">
         {TABS.map((t) => (
           <button

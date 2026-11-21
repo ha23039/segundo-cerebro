@@ -19,7 +19,7 @@ const longDay = (d: string) => new Intl.DateTimeFormat('es-ES', { day: 'numeric'
 
 async function openStats(page: import('@playwright/test').Page, view?: 'Mes' | 'Histórico') {
   await page.getByRole('link', { name: 'Progreso' }).first().click()
-  await expect(page.getByRole('heading', { name: 'Estadísticas', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Progreso', level: 1 })).toBeVisible()
   if (view) await page.getByRole('tab', { name: view }).click()
 }
 
