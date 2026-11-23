@@ -160,6 +160,11 @@
 
 .sidebar-link[aria-current="page"] {
   background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--text);
+}
+
+/* El acento va en el icono: el texto en color de acento no llega a 4,5:1 sobre el fondo tintado en Apex y Océano claros */
+.sidebar-link[aria-current="page"] svg {
   color: var(--primary);
 }
 
