@@ -47,25 +47,38 @@ test('por defecto Hábitos va antes que Foco; con las flechas se sube Foco y el 
   expect(await before(habitos(page), foco(page))).toBe(true)
 })
 
-test('arrastrar con el ratón cambia el orden', async ({ page }) => {
+test('arrastrar la tarjeta real con el ratón cambia el orden', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 2600 }) // todo a la vista: sin depender del desplazamiento
   await customize(page)
-  const handle = page.getByRole('button', { name: 'Mover Foco' })
-  const target = page.getByRole('button', { name: 'Mover Puntuación de hoy' })
+  const handle = page.getByRole('button', { name: 'Mover Prioridades' })
+  const target = page.getByRole('button', { name: 'Mover Foco' })
   const h = (await handle.boundingBox())!
   const t = (await target.boundingBox())!
   await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2)
   await page.mouse.down()
-  await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2 - 10, { steps: 3 })
-  await page.mouse.move(t.x + t.width / 2, t.y + 2, { steps: 15 })
+  await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2 - 12, { steps: 3 })
+  await page.mouse.move(t.x + t.width / 2, t.y + 2, { steps: 20 })
   await page.mouse.up()
-  await expect(page.getByRole('list', { name: 'Tarjetas visibles' }).locator('.board-tile-label').first()).toHaveText('Foco')
+  const rows = page.getByRole('list', { name: 'Tarjetas visibles' }).locator('.board-tile-label')
+  await expect(rows.nth(3)).toHaveText('Prioridades')
+  await expect(rows.nth(4)).toHaveText('Foco')
   await page.getByRole('button', { name: 'Listo' }).click()
   await reloadSaved(page)
+  expect(await before(page.getByRole('region', { name: 'Prioridades' }), foco(page))).toBe(true)
+})
+
+test('en el modo personalizar se ven las tarjetas reales, sin poder usarse', async ({ page }) => {
   await customize(page)
-  await expect(page.getByRole('list', { name: 'Tarjetas visibles' }).locator('.board-tile-label').first()).toHaveText('Foco')
+  const items = page.getByRole('list', { name: 'Tarjetas visibles' })
+  await expect(items.getByText('Hábitos de hoy').first()).toBeVisible()
+  await expect(items.getByText('Estudiar').first()).toBeVisible()
+  // lo de dentro es inerte: ni se enfoca ni se puede pulsar
+  expect(await items.locator('[inert] button').count()).toBeGreaterThan(0)
+  await expectNoA11yViolations(page)
 })
 
 test('con el teclado: espacio, flecha y espacio', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 2600 })
   await customize(page)
   const before = await labels(page)
   await page.getByRole('button', { name: 'Mover Hábitos de hoy' }).focus()
