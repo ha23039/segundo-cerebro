@@ -69,6 +69,8 @@ test('informe imprimible: resumen, tabla por hábito, accesible y sin desbordar 
   await page.getByRole('link', { name: 'Informe imprimible' }).click()
   await expect(page.getByRole('heading', { name: 'Informe', level: 1 })).toBeVisible()
   const sheet = page.getByRole('article', { name: 'Informe imprimible' })
+  // «Esta semana» puede no tener nada programado todavía (p. ej. un lunes): el historial siempre tiene datos
+  await page.getByLabel('Periodo').selectOption({ label: 'Todo el historial' })
   await expect(sheet.getByRole('row', { name: /Leer cada día/ })).toBeVisible()
   await expect(sheet.getByText('Cumplimiento')).toBeVisible()
   await expectNoA11yViolations(page)

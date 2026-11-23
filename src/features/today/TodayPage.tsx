@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Icon } from '../../components/Icon'
 import { addDays, formatLongDate, startOfWeek } from '../../lib/dates'
@@ -31,7 +31,10 @@ import { useNowMinutes } from '../profile/useNowMinutes'
 import { useTimezone, useToday } from '../profile/useToday'
 import { useExcuseMutation, useExcuses } from '../rest/hooks'
 import { RestCard } from '../rest/RestCard'
+import { Board } from './Board'
 import { BlocksCard } from './BlocksCard'
+import type { BlockId } from './domain/layout'
+import { useTodayLayout } from './useTodayLayout'
 import { DayPicker } from './DayPicker'
 import { HabitRow } from './HabitRow'
 import '../focus/focus.css'
@@ -58,6 +61,8 @@ export function TodayPage() {
   const today = useToday()
   const timeZone = useTimezone()
   const { session } = useAuth()
+  const { layout, save: saveLayout } = useTodayLayout()
+  const [customizing, setCustomizing] = useState(false)
   const userId = session?.user.id ?? ''
   const { timer, start } = useActiveTimer(userId || null)
 
@@ -133,6 +138,104 @@ export function TodayPage() {
     }
   }, [active, logs.data, prioByDate, today, ex])
 
+
+  function renderBlock(id: BlockId): ReactNode {
+    switch (id) {
+      case 'resumen':
+        return <ScoreCard day={day} isToday={offset === 0} rest={restDay} />
+      case 'rendimiento':
+        return (
+          stats && (
+            <section className="kpis" aria-label="Rendimiento">
+              <ScoreStat label="Semana" value={stats.week} prev={stats.prevWeek} hint="media · vs. semana anterior" />
+              <ScoreStat label="Mes" value={stats.month} prev={stats.prevMonth} hint="media · vs. mes anterior" />
+              <div className="card stat">
+                <p className="eyebrow">Racha</p>
+                <p className="stat-value">
+                  {stats.streak} <span className="stat-unit">{stats.streak === 1 ? 'día' : 'días'}</span>
+                </p>
+                <p className="stat-hint muted">seguidos con {STREAK_THRESHOLD} o más</p>
+              </div>
+            </section>
+          )
+        )
+      case 'habitos':
+        return (
+      <section className="card dash-habits" aria-labelledby="habits-title">
+        <div className="card-head">
+          <h2 id="habits-title">Hábitos de hoy</h2>
+          <div className="pills" role="group" aria-label="Filtro">
+            <button type="button" className="pill" aria-pressed={!onlyPending} onClick={() => setOnlyPending(false)}>
+              Todos
+            </button>
+            <button type="button" className="pill" aria-pressed={onlyPending} onClick={() => setOnlyPending(true)}>
+              Pendientes
+            </button>
+          </div>
+        </div>
+        {restDay && due.length > 0 && (
+          <p className="rest-banner">
+            <Icon name="moon" size={16} />
+            Día de descanso: nada es obligatorio. Lo que hagas suma a tus rachas.
+          </p>
+        )}
+        {due.length === 0 ? (
+          <div className="empty-state">
+            <p className="empty-title">No tienes hábitos para este día.</p>
+            <Link to="/habitos/nuevo">Crear un hábito</Link>
+          </div>
+        ) : shown.length === 0 ? (
+          <p className="empty-state empty-title">{restDay ? 'Hoy no hay nada pendiente: descansa.' : 'No te queda nada pendiente. Buen trabajo.'}</p>
+        ) : (
+          <ul className="today-list">
+            {shown.map((h) => {
+              const habitLogs = logMap.get(h.id) ?? EMPTY
+              const period = periodAt(h, date)!
+              const value = habitLogs.get(date)
+              return (
+                <HabitRow
+                  key={h.id}
+                  habit={h}
+                  period={period}
+                  value={value}
+                  done={isDone(h, period, value)}
+                  streak={currentStreak(h, habitLogs, today, ex)}
+                  disabled={!online}
+                  skip={skipOf(ex, h.id, date)}
+                  rest={restDay !== null}
+                  onFocus={date === today && timer === null && userId ? () => startFocus(h.id) : undefined}
+                  onSet={(v) => setLog.mutate({ habitId: h.id, date, value: v })}
+                  onSkip={(reason) =>
+                    changeExcuse.mutate(
+                      reason ? { kind: 'skip', habitId: h.id, date, reason } : { kind: 'unskip', habitId: h.id, date },
+                    )
+                  }
+                />
+              )
+            })}
+          </ul>
+        )}
+      </section>
+        )
+      case 'foco':
+        return <FocusCard habits={active} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
+      case 'prioridades':
+        return <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
+      case 'horario':
+        return <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
+      case 'objetivos':
+        return <GoalsDueCard goals={dueSoon(goals.data ?? [], today)} today={today} />
+      case 'diario':
+        return offset === 0 ? <DiaryCard today={today} /> : null
+      case 'descanso':
+        return <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
+      case 'grafica':
+        return stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />
+      case 'areas':
+        return stats && <AreaBreakdown stats={stats.areas} />
+    }
+  }
+
   return (
     <div className="today">
       <header className="today-head">
@@ -141,9 +244,17 @@ export function TodayPage() {
           <h1>Hoy</h1>
           <p className="muted today-date">{formatLongDate(date)}</p>
         </div>
-        <span className="only-narrow">
-          <ThemeToggle />
-        </span>
+        <div className="today-head-actions">
+          {!loading && active.length > 0 && (
+            <button type="button" className="btn ghost" aria-pressed={customizing} onClick={() => setCustomizing((c) => !c)}>
+              <Icon name="grip" />
+              Personalizar
+            </button>
+          )}
+          <span className="only-narrow">
+            <ThemeToggle />
+          </span>
+        </div>
       </header>
 
       <DayPicker today={today} offset={offset} onChange={setOffset} />
@@ -184,92 +295,7 @@ export function TodayPage() {
       )}
 
       {!loading && active.length > 0 && (
-        <div className="dash">
-          <ScoreCard day={day} isToday={offset === 0} rest={restDay} />
-
-          {stats && (
-            <section className="kpis" aria-label="Rendimiento">
-              <ScoreStat label="Semana" value={stats.week} prev={stats.prevWeek} hint="media · vs. semana anterior" />
-              <ScoreStat label="Mes" value={stats.month} prev={stats.prevMonth} hint="media · vs. mes anterior" />
-              <div className="card stat">
-                <p className="eyebrow">Racha</p>
-                <p className="stat-value">
-                  {stats.streak} <span className="stat-unit">{stats.streak === 1 ? 'día' : 'días'}</span>
-                </p>
-                <p className="stat-hint muted">seguidos con {STREAK_THRESHOLD} o más</p>
-              </div>
-            </section>
-          )}
-
-          <div className="dash-grid">
-            <section className="card dash-habits" aria-labelledby="habits-title">
-              <div className="card-head">
-                <h2 id="habits-title">Hábitos de hoy</h2>
-                <div className="pills" role="group" aria-label="Filtro">
-                  <button type="button" className="pill" aria-pressed={!onlyPending} onClick={() => setOnlyPending(false)}>
-                    Todos
-                  </button>
-                  <button type="button" className="pill" aria-pressed={onlyPending} onClick={() => setOnlyPending(true)}>
-                    Pendientes
-                  </button>
-                </div>
-              </div>
-              {restDay && due.length > 0 && (
-                <p className="rest-banner">
-                  <Icon name="moon" size={16} />
-                  Día de descanso: nada es obligatorio. Lo que hagas suma a tus rachas.
-                </p>
-              )}
-              {due.length === 0 ? (
-                <div className="empty-state">
-                  <p className="empty-title">No tienes hábitos para este día.</p>
-                  <Link to="/habitos/nuevo">Crear un hábito</Link>
-                </div>
-              ) : shown.length === 0 ? (
-                <p className="empty-state empty-title">{restDay ? 'Hoy no hay nada pendiente: descansa.' : 'No te queda nada pendiente. Buen trabajo.'}</p>
-              ) : (
-                <ul className="today-list">
-                  {shown.map((h) => {
-                    const habitLogs = logMap.get(h.id) ?? EMPTY
-                    const period = periodAt(h, date)!
-                    const value = habitLogs.get(date)
-                    return (
-                      <HabitRow
-                        key={h.id}
-                        habit={h}
-                        period={period}
-                        value={value}
-                        done={isDone(h, period, value)}
-                        streak={currentStreak(h, habitLogs, today, ex)}
-                        disabled={!online}
-                        skip={skipOf(ex, h.id, date)}
-                        rest={restDay !== null}
-                        onFocus={date === today && timer === null && userId ? () => startFocus(h.id) : undefined}
-                        onSet={(v) => setLog.mutate({ habitId: h.id, date, value: v })}
-                        onSkip={(reason) =>
-                          changeExcuse.mutate(
-                            reason ? { kind: 'skip', habitId: h.id, date, reason } : { kind: 'unskip', habitId: h.id, date },
-                          )
-                        }
-                      />
-                    )
-                  })}
-                </ul>
-              )}
-            </section>
-
-            <aside className="dash-side" aria-label="Plan y progreso">
-              <FocusCard habits={active} goals={goals.data?.filter((g) => g.status === 'activo') ?? []} today={today} timeZone={timeZone} />
-              <PrioritiesCard date={date} items={dayPriorities} disabled={!online} />
-              <BlocksCard blocks={blocks} anyScheduled={active.some((h) => h.startTime !== null)} isToday={offset === 0} rest={restDay !== null} />
-              <GoalsDueCard goals={dueSoon(goals.data ?? [], today)} today={today} />
-              {offset === 0 && <DiaryCard today={today} />}
-              <RestCard date={date} today={today} restDays={restDays ?? []} disabled={!online || !excusesQuery.isSuccess} />
-              {stats && <WeekChart days={stats.days} today={today} threshold={STREAK_THRESHOLD} />}
-              {stats && <AreaBreakdown stats={stats.areas} />}
-            </aside>
-          </div>
-        </div>
+        <Board layout={layout} render={renderBlock} customizing={customizing} onChange={(next) => saveLayout.mutate(next)} onDone={() => setCustomizing(false)} />
       )}
     </div>
   )

@@ -42,6 +42,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 **H2 Hoy.** Abro la app y veo lo que toca hoy y lo marco con un toque.
 - Muestra los hábitos `dias` programados hoy y los `semanal` aún sin cumplir esta semana. `check` se marca o desmarca con un toque; `cantidad` usa +/− o escribir el valor. Persiste tras recargar.
 - También muestra la racha de cada hábito, los minutos de foco de hoy, los objetivos que vencen en ≤ 7 días y un acceso al diario de hoy.
+- **Tarjetas ordenables** *(decisión de Claude, 2026-11-23)*: en Hoy, «Personalizar» convierte las 11 tarjetas (puntuación, semana/mes/racha, hábitos, foco, prioridades, lo que queda de hoy, objetivos que vencen, diario, descanso, gráfica, por área) en fichas que se arrastran por su asa (ratón, táctil o teclado: espacio, flechas, espacio), se suben o bajan con botones y se ocultan o muestran. «Restablecer» vuelve al orden de fábrica. El orden vive en `profiles.today_layout` (viaja con la cuenta y entra en la exportación); la app descarta ids desconocidos y añade al final las tarjetas nuevas de futuras versiones, así que ninguna se pierde. En escritorio (≥ 900 px) las tarjetas anchas ocupan la fila entera y las demás se reparten en dos columnas.
 - Puedo cambiar la fecha a uno de los 7 días anteriores para corregir.
 
 **H3 Estadísticas.** Veo mi progreso real.

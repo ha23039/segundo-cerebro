@@ -53,10 +53,136 @@
   color: var(--on-primary);
 }
 
-.dash {
+/* ---- Tablero de tarjetas (orden elegido por el usuario) ---- */
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.board-item {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.board-item > * {
+  flex: 1;
+}
+
+.board-item:empty {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  .board-item.is-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.today-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Personalizar: fichas que se arrastran ---- */
+.board-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.board-edit p,
+.board-edit h3 {
+  margin: 0;
+}
+
+.board-edit .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.board-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.board-tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.board-tile.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.board-tile.is-hidden {
+  border-style: dashed;
+  color: var(--muted);
+  justify-content: space-between;
+}
+
+.board-tile-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.board-tile.is-hidden .board-tile-label {
+  font-weight: 400;
+}
+
+.board-tile-actions {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.board-handle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.board-handle:active {
+  cursor: grabbing;
+}
+
+.board-hidden-title {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-top: 8px;
 }
 
 /* ---- Tarjeta principal ---- */
@@ -297,41 +423,8 @@
 }
 
 @media (min-width: 900px) {
-  .dash {
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: 20px;
-  }
-
   .hero {
     padding: 28px;
-  }
-
-  .kpis {
-    grid-template-columns: 1fr;
-  }
-
-  .kpis .stat {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 12px;
-  }
-
-  .kpis .stat .eyebrow {
-    flex-basis: 100%;
-  }
-
-  .dash-grid {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: 20px;
-    align-items: start;
-  }
-
-  .dash-side {
-    position: sticky;
-    top: 24px;
   }
 }
 

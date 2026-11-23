@@ -207,14 +207,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "timezone": string,"updated_at": string,"user_id": string
+                    "timezone": string,"today_layout": NonNullable<Json>,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "timezone"?: string,"updated_at"?: string,"user_id": string
+                    "timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "timezone"?: string,"updated_at"?: string,"user_id"?: string
+                    "timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
