@@ -1,0 +1,11 @@
+.review { display: flex; flex-direction: column; gap: 16px; }
+.review h1, .review h2, .review h3, .review p { margin: 0; }
+.review-summary, .review-form { display: flex; flex-direction: column; gap: 12px; }
+.review-big { font-size: 2rem; font-weight: 700; }
+.review-big .small { font-size: 0.9rem; font-weight: 400; }
+.review-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+.review-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.review-hint { margin-bottom: 4px; }
+.review-form textarea { width: 100%; }
+.review-past { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.review-past .card { display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }

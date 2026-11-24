@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { overlay, usePendingLogs } from '../../lib/outbox'
 import type { IsoDate } from '../../lib/dates'
 import * as api from './api'
 import { setInRecord, toLogMaps, type LogsRecord } from './logsCache'
+import { sendLog } from './sync'
 import type { HabitInput } from './schema'
 
 export function useHabits() {
@@ -14,7 +17,10 @@ export function useDeletedHabits() {
 
 /** La clave no incluye "hoy": al cambiar de día se reutiliza la caché (también sin red). */
 export function useLogs(from: IsoDate, enabled = true) {
-  return useQuery({ queryKey: ['logs', from], queryFn: () => api.fetchLogs(from), select: toLogMaps, enabled })
+  // Los cambios hechos sin red esperan en la cola y se muestran sobre lo que dice el servidor
+  const pending = usePendingLogs()
+  const select = useMemo(() => (r: LogsRecord) => toLogMaps(overlay(r, pending)), [pending])
+  return useQuery({ queryKey: ['logs', from], queryFn: () => api.fetchLogs(from), select, enabled })
 }
 
 export function useHabitMutations() {
@@ -57,8 +63,9 @@ export function useSetLog() {
 
   return useMutation({
     mutationKey: SET_LOG,
-    mutationFn: ({ habitId, date, value }: { habitId: string; date: IsoDate; value: number | null }) =>
-      api.setLog(habitId, date, value),
+    mutationFn: sendLog,
+    // Sin red no se pausa: el cambio entra en la cola del dispositivo y se envía al volver
+    networkMode: 'always',
     scope: { id: 'habit-logs' },
     onMutate: ({ habitId, date, value }) => {
       const cell = `${habitId}|${date}`

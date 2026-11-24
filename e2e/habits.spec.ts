@@ -115,3 +115,14 @@ test('lista y formulario sin violaciones de accesibilidad', async ({ page }) => 
   await page.getByRole('link', { name: 'Nuevo hábito' }).click()
   await expectNoA11yViolations(page)
 })
+
+test('una plantilla rellena el formulario y se puede cambiar antes de guardar', async ({ page }) => {
+  await page.getByRole('link', { name: 'Nuevo hábito' }).click()
+  await page.getByRole('button', { name: 'Beber agua' }).click()
+  await expect(page.getByLabel('Nombre')).toHaveValue('Beber agua')
+  await expect(page.getByLabel('Meta')).toHaveValue('8')
+  await expect(page.getByLabel('Unidad')).toHaveValue('vasos')
+  await page.getByLabel('Meta').fill('6')
+  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(card(page, 'Beber agua')).toContainText('6 vasos')
+})

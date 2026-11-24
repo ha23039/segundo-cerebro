@@ -4,6 +4,7 @@ import { toMessage } from '../../lib/errors'
 import { getThemePrefs, setMode, setPalette, type Mode, type Palette } from '../../lib/theme'
 import { useAuth } from '../auth/useAuth'
 import { ExportCard } from '../export/ExportCard'
+import { RemindersCard } from '../reminders/RemindersCard'
 import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
@@ -119,6 +120,18 @@ export function SettingsPage() {
           </Link>
         </div>
       </section>
+
+      <section className="stack" aria-labelledby="revision">
+        <h2 id="revision">Revisión semanal</h2>
+        <p className="muted">Mira cómo fue la semana y escribe qué mantener y qué mejorar.</p>
+        <div className="row">
+          <Link className="btn" to="/revision">
+            Hacer la revisión
+          </Link>
+        </div>
+      </section>
+
+      <RemindersCard />
 
       <ExportCard />
 

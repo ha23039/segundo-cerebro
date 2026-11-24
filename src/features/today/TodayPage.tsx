@@ -34,6 +34,7 @@ import { RestCard } from '../rest/RestCard'
 import { Board } from './Board'
 import { BlocksCard } from './BlocksCard'
 import type { BlockId } from './domain/layout'
+import { useDeepLink } from './useDeepLink'
 import { useTodayLayout } from './useTodayLayout'
 import { DayPicker } from './DayPicker'
 import { HabitRow } from './HabitRow'
@@ -58,6 +59,7 @@ function ScoreStat({ label, value, prev, hint }: { label: string; value: number 
 }
 
 export function TodayPage() {
+  useDeepLink()
   const today = useToday()
   const timeZone = useTimezone()
   const { session } = useAuth()

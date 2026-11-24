@@ -60,7 +60,7 @@ describe('bundle', () => {
 
   it('incluye todas las tablas del usuario', () => {
     expect([...EXPORT_TABLES].sort()).toEqual(
-      ['daily_priorities', 'focus_sessions', 'goals', 'habit_logs', 'habit_schedules', 'habit_skips', 'habits', 'journal_entries', 'milestones', 'notes', 'profiles', 'rest_days'].sort(),
+      ['daily_priorities', 'focus_sessions', 'goals', 'habit_logs', 'habit_schedules', 'habit_skips', 'habits', 'journal_entries', 'milestones', 'notes', 'profiles', 'rest_days', 'weekly_reviews'].sort(),
     )
   })
   it('cada tabla exportada tiene su clave de orden', () => {

@@ -5,7 +5,7 @@ export function useProfile() {
   return useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('timezone, today_layout').single()
+      const { data, error } = await supabase.from('profiles').select('timezone, today_layout, reminders').single()
       if (error) throw error
       return data
     },

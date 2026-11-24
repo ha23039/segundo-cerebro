@@ -1,6 +1,8 @@
 import { isAuthRetryableFetchError, type Session } from '@supabase/supabase-js'
 import { useEffect, useState, type ReactNode } from 'react'
+import { clearOutbox } from '../../lib/outbox'
 import { clearPersistedCache } from '../../lib/queryClient'
+import { syncOutbox } from '../habits/sync'
 import { readStoredSession, supabase } from '../../lib/supabase'
 import { AuthContext, type AuthValue } from './useAuth'
 
@@ -55,6 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     },
     async signOut() {
+      // Lo que quedó sin enviar se intenta guardar antes de borrar los datos del dispositivo (máx. 3 s)
+      if (navigator.onLine) await Promise.race([syncOutbox().catch(() => undefined), new Promise((r) => setTimeout(r, 3000))])
+      await clearOutbox()
       await clearPersistedCache()
       await supabase.auth.signOut({ scope: 'local' })
     },

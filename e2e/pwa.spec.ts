@@ -16,7 +16,7 @@ test('el manifest es instalable', async ({ request }) => {
   expect(manifest.icons.map((i: { sizes: string }) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']))
 })
 
-test('sin conexión la app abre en solo lectura y avisa', async ({ page, context }) => {
+test('sin conexión la app abre y avisa de que se puede marcar', async ({ page, context }) => {
   await login(page, user)
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true))
   // Asegura que la caché de consultas ya se escribió en IndexedDB (throttle de 1 s)
@@ -25,8 +25,21 @@ test('sin conexión la app abre en solo lectura y avisa', async ({ page, context
   await context.setOffline(true)
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Hoy', level: 1 })).toBeVisible()
-  await expect(page.getByRole('status').filter({ hasText: 'Sin conexión: solo lectura' })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: 'Sin conexión: puedes marcar hábitos' })).toBeVisible()
 
   await context.setOffline(false)
-  await expect(page.getByText('Sin conexión: solo lectura')).toBeHidden()
+  await expect(page.getByText('Sin conexión: puedes marcar hábitos')).toBeHidden()
+})
+
+test('el manifest declara atajos que apuntan a rutas reales', async ({ request }) => {
+  const manifest = await (await request.get('/manifest.webmanifest')).json()
+  const urls = manifest.shortcuts.map((s: { url: string }) => s.url)
+  expect(urls).toEqual(['/?accion=habitos', '/?accion=foco', '/diario', '/habitos/nuevo'])
+})
+
+test('el enlace ?accion=foco lleva a la tarjeta Foco y limpia la dirección', async ({ page }) => {
+  await login(page, user)
+  await page.goto('/?accion=foco')
+  await expect(page.locator('#foco')).toBeInViewport()
+  await expect(page).toHaveURL(/\/$/)
 })

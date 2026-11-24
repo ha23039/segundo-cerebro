@@ -6,7 +6,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - **Stack:** Vite + React + TypeScript · Supabase (Auth + Postgres) con Supabase CLI: migraciones SQL en el repo, RLS en las migraciones, tipos con `supabase gen types` · PWA (manifest + service worker) · Vitest, Playwright, axe · GitHub (`ha23039/segundo-cerebro`, **público**: nunca se suben claves ni respaldos).
 - **Infra:** desarrollo con Supabase local (Docker); producción en Supabase Cloud (plan gratis) y frontend estático en **Cloudflare** (Pages/Workers static assets). GitHub Actions: lint + tipos + Vitest + Playwright + axe → despliegue solo si todo pasa. Secretos en GitHub Secrets y `.env` local ignorado.
 - **Auth:** correo + contraseña. Registros públicos **desactivados**; la única cuenta se crea desde CLI/panel.
-- **Conexión:** la app abre sin red (shell en caché) y muestra un aviso; **registrar requiere red**. Cola sin conexión queda fuera de v1. *(Decisión de Claude)* Sin red se muestran en solo lectura los últimos datos cargados (caché de consultas guardada en IndexedDB), que se borra al cerrar sesión.
+- **Conexión:** la app abre sin red (shell en caché) y muestra un aviso. *(Actualizado 2026-11-24)* **Marcar hábitos y cambiar cantidades funciona sin red**: el cambio queda en una cola del dispositivo (IndexedDB), se ve al instante sobre los datos guardados y se envía en orden al volver la conexión (el último valor de cada hábito y día manda; si el servidor lo rechaza, por ejemplo por pasar los 7 días de la ventana, se descarta y se avisa). Lo demás (omitir, objetivos, notas, ajustes…) sigue necesitando red. Al cerrar sesión se intenta enviar lo pendiente y se borra la cola. *(Decisión de Claude)* Sin red se muestran en solo lectura los últimos datos cargados (caché de consultas guardada en IndexedDB), que se borra al cerrar sesión.
 - **Diseño:** `tokens.css` y `theme.js` tal cual (`theme.js` en `<head>` antes del CSS). Se añade `--danger` (por paleta y modo) en un archivo aparte. Todo CSS usa variables, sin colores literales en componentes. Móvil primero, safe-area, objetivos táctiles ≥ 40 px, inputs de 16 px. Interfaz solo en español.
 - **Fechas:** zona horaria guardada en el perfil (por defecto `Europe/Madrid`). Un "día" es la fecha local en esa zona. Semana de lunes a domingo. Madrid tiene horario de verano: los cálculos de fechas usan una librería con zonas horarias (nunca sumar 24 h) y hay tests para los días de cambio de hora (último domingo de marzo y de octubre).
 
@@ -22,6 +22,8 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - `goals`: título, descripción, inicio (`start_date`, hoy al crear), fecha límite, estado (activo | completado | abandonado), `completed_at`, `deleted_at` (papelera con purga a los 30 días). `milestones`: objetivo, título, hecho, `done_at`, orden.
 - `journal_entries`: fecha (única por usuario), texto ≤ 2000 caracteres.
 - `notes`: título, cuerpo en Markdown, etiquetas (`text[]`), búsqueda de texto completo en español, `deleted_at`.
+- `weekly_reviews`: semana (lunes), qué fue bien (≤ 1000), qué mejorar (≤ 1000), foco de la próxima (≤ 500). Única por (usuario, semana).
+- `push_subscriptions`: endpoint https y claves de cada dispositivo suscrito. `reminder_log`: avisos ya enviados (solo el servicio). `profiles.reminders`: preferencias de avisos.
 - Validación en el cliente y restricciones en la BD (longitudes, `check`, valores > 0).
 
 ## Reglas de cálculo
@@ -52,7 +54,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 
 **H4 Foco.** Inicio un temporizador y registro la sesión.
 - Duraciones configurables (por defecto 25/5), asociables a un hábito u objetivo. El tiempo se calcula con marcas de tiempo: bloquear el teléfono o recargar no lo desajusta.
-- La sesión se guarda al terminar o al detenerla con los minutos reales; las de < 1 min se descartan. Sin notificaciones push en v1 (iOS no lo permite sin servidor de push).
+- La sesión se guarda al terminar o al detenerla con los minutos reales; las de < 1 min se descartan. El aviso al terminar el temporizador no usa push: la app debe estar abierta (los recordatorios de hábitos sí, ver H9).
 - **Cómo se resuelve** *(decisión de Claude, 2026-11-20)*: el temporizador es una tarjeta «Foco» en Hoy (no una pestaña: la barra inferior ya tiene cinco), con un aviso en el resto de pantallas mientras corre y los minutos en el título de la pestaña. Duraciones: 15/25/45/60 o cualquier valor de 1 a 240 min, y descanso de 5/10/15; se recuerdan en el dispositivo (25/5 por defecto). El temporizador en curso se guarda en el dispositivo con su hora de inicio, así que sobrevive a recargar o cerrar la app; si terminó mientras no estaba, se guarda al volver con el tiempo planificado (no cuenta el tiempo ocioso). Minutos reales = minutos completos transcurridos; menos de 1 minuto se descarta. El id de la sesión se fija al empezar, así que reintentar el guardado (p. ej. sin red) nunca la duplica. Los descansos se guardan con tipo `descanso` y no suman al foco. La BD valida que los minutos reales coincidan con el tiempo transcurrido y que la sesión no termine en el futuro. Las sesiones solo se crean y se borran. Estadísticas → Foco: minutos por día de la semana, últimas 8 semanas y lista de sesiones (la sesión cuenta en el día, en la zona del perfil, en que empezó).
 
 **H5 Objetivos.** Creo objetivos con hitos y fecha límite.
@@ -71,7 +73,19 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - Script de restauración documentado y probado contra Supabase local.
 - En Ajustes: "Descargar mis datos" en JSON y CSV (solo exportar, sin importar en la app).
 - Informe imprimible (semana / mes / histórico) con CSS de impresión, para guardarlo como PDF desde iOS.
-- **Cómo se resuelve** *(decisión de Claude, 2026-11-21)*: el respaldo semanal lleva el esquema `public` completo (esquema + datos), sin tablas de `auth` (ni sesiones ni contraseñas); la restauración exige una base vacía con el esquema aplicado y la cuenta creada con el mismo id (`USER_ID`), y es transaccional. Se cifra con age (clave pública en GitHub, privada solo en el gestor del usuario) y se sube a R2 (conserva 12). «Tus datos» en Ajustes exporta las 12 tablas en JSON o en un zip de CSV generados en el dispositivo (CSV con BOM y protección contra fórmulas). El informe imprimible (`/informe`) cubre esta semana, este mes, el mes anterior o todo el historial, y la impresión siempre es clara. Guía completa en `docs/respaldo.md`.
+- **Cómo se resuelve** *(decisión de Claude, 2026-11-21)*: el respaldo semanal lleva el esquema `public` completo (esquema + datos), sin tablas de `auth` (ni sesiones ni contraseñas); la restauración exige una base vacía con el esquema aplicado y la cuenta creada con el mismo id (`USER_ID`), y es transaccional. Se cifra con age (clave pública en GitHub, privada solo en el gestor del usuario) y se sube a R2 (conserva 12). «Tus datos» en Ajustes exporta las 13 tablas en JSON o en un zip de CSV generados en el dispositivo (CSV con BOM y protección contra fórmulas). El informe imprimible (`/informe`) cubre esta semana, este mes, el mes anterior o todo el historial, y la impresión siempre es clara. Guía completa en `docs/respaldo.md`.
+
+**H9 Recordatorios.** Recibo avisos en el iPhone sin tener la app abierta. *(Decisión de Claude, 2026-11-24)*
+- Notificaciones Web Push (iOS 16.4 o posterior, app instalada). Tres avisos, activables por separado: a la hora de inicio de cada hábito con horario, repaso de la tarde (por defecto 21:00, «Te quedan N hábitos») y revisión semanal (domingo 19:00). Preferencias en `profiles.reminders`, dispositivos en `push_subscriptions`.
+- La BD decide qué avisar (`due_reminders()`, en la zona del perfil): solo lo programado hoy, sin hacer, sin omitir y fuera de días de descanso; cada aviso una vez al día y dentro de una ventana de 15 minutos. Una Edge Function los envía cifrados; las claves VAPID viven en secretos, nunca en el repositorio. Puesta en marcha en `docs/recordatorios.md`.
+
+**H10 Revisión semanal.** Cierro la semana con una nota. *(Decisión de Claude, 2026-11-24)*
+- Pantalla `/revision` (desde Ajustes y desde el recordatorio): cifras de la semana calculadas al momento (cumplimiento, hábitos con semana completa, los que más costaron por debajo del 70 %, diferencia en puntos con la semana anterior) y tres notas: qué fue bien, qué mejorar y foco de la próxima semana. Una revisión por semana (lunes a domingo) en `weekly_reviews`; no se puede revisar una semana que no ha empezado. Por defecto se abre la semana en curso el domingo y la anterior el resto de días.
+
+**H11 Plantillas y atajos.** Creo hábitos y abro la app más rápido. *(Decisión de Claude, 2026-11-24)*
+- Al crear un hábito, nueve plantillas (beber agua, dormir a mi hora, entrenar, caminar, estudiar, leer, trabajo profundo, revisar gastos, meditar u orar) cargan el formulario; se pueden cambiar antes de guardar. No crean nada por sí solas.
+- Atajos de pulsación larga del icono (Android y escritorio): marcar hábitos, iniciar foco, diario y nuevo hábito. iOS no admite atajos de pulsación larga en iconos de apps web; los mismos enlaces (`/?accion=foco`, `/?accion=habitos`, `/diario`, `/habitos/nuevo`) funcionan como marcadores o desde la app Atajos, pero allí se abren en Safari, no en la app instalada.
+- «Congelar un día» ya existe: son los días de descanso y las omisiones justificadas (no rompen rachas ni puntúan).
 
 ## Seguridad y calidad (aplica a todas las fases)
 - RLS activado en todas las tablas, con tests de que otro usuario no ve ni escribe datos ajenos.
@@ -83,7 +97,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 F0 base: repo, Supabase local, auth, tema y Ajustes, navegación, PWA instalable, CI y despliegue · F1 hábitos + Hoy + rachas · F2 estadísticas · F3 foco · F4 objetivos · F5 diario y notas · F6 respaldo y salida de datos.
 
 ## Fuera de alcance (v1)
-Varios usuarios, funciones sociales, notificaciones push, registrar sin conexión, importar en la app, gamificación o adornos.
+Varios usuarios, funciones sociales, importar en la app, gamificación o adornos. *(Los recordatorios push y marcar hábitos sin conexión entraron el 2026-11-24, ver H9 y Conexión.)*
 
 ## Lo decide quien construye
 Librerías concretas (router, manejo de datos, Markdown, formularios), estructura de carpetas, iconos y layout de navegación, siempre dentro de las restricciones de arriba.

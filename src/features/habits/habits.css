@@ -134,3 +134,33 @@
 .trash-name {
   overflow-wrap: anywhere;
 }
+
+/* ---- Plantillas al crear un hábito ---- */
+.presets {
+  margin-bottom: 16px;
+}
+
+.presets-title {
+  font-size: 1rem;
+  margin: 0 0 8px;
+}
+
+.presets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
