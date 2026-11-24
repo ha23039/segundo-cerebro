@@ -12,6 +12,7 @@ import { HabitEditPage } from './features/habits/HabitEditPage'
 import { HabitsPage } from './features/habits/HabitsPage'
 import { AppShell } from './features/layout/AppShell'
 import { ReportPage } from './features/report/ReportPage'
+import { ReviewPage } from './features/review/ReviewPage'
 import { RouteErrorView } from './features/layout/RouteError'
 import { StatsPage } from './features/stats/StatsPage'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
       { path: 'diario', element: <JournalPage /> },
       { path: 'notas/:id', element: <NotePage /> },
       { path: 'informe', element: <ReportPage /> },
+      { path: 'revision', element: <ReviewPage /> },
       { path: 'ajustes', element: <SettingsPage /> },
     ],
   },

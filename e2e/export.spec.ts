@@ -31,7 +31,7 @@ test('descargar JSON incluye todas las tablas, lo archivado y la papelera, sin e
   expect(json.app).toBe('segundo-cerebro')
   expect(json.formato).toBe(1)
   expect(Object.keys(json.tablas).sort()).toEqual(
-    ['daily_priorities', 'focus_sessions', 'goals', 'habit_logs', 'habit_schedules', 'habit_skips', 'habits', 'journal_entries', 'milestones', 'notes', 'profiles', 'rest_days'].sort(),
+    ['daily_priorities', 'focus_sessions', 'goals', 'habit_logs', 'habit_schedules', 'habit_skips', 'habits', 'journal_entries', 'milestones', 'notes', 'profiles', 'rest_days', 'weekly_reviews'].sort(),
   )
   expect(json.tablas.habits.map((h: { name: string }) => h.name)).toEqual(['Estudiar'])
   expect(json.tablas.habit_logs).toHaveLength(5)

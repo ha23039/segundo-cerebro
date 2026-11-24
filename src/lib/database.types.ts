@@ -207,14 +207,42 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "timezone": string,"today_layout": NonNullable<Json>,"updated_at": string,"user_id": string
+                    "reminders": NonNullable<Json>,"timezone": string,"today_layout": NonNullable<Json>,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                    "reminders"?: NonNullable<Json>,"timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                    "reminders"?: NonNullable<Json>,"timezone"?: string,"today_layout"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"p256dh": string,"user_id"?: string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"reminder_log": {
+                  Row: {
+                    "day": string,"kind": string,"ref": string,"sent_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day": string,"kind": string,"ref": string,"sent_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "day"?: string,"kind"?: string,"ref"?: string,"sent_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -233,6 +261,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"weekly_reviews": {
+                  Row: {
+                    "created_at": string,"id": string,"next_focus": string,"to_improve": string,"updated_at": string,"user_id": string,"week_start": string,"went_well": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"next_focus"?: string,"to_improve"?: string,"updated_at"?: string,"user_id"?: string,"week_start": string,"went_well"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"next_focus"?: string,"to_improve"?: string,"updated_at"?: string,"user_id"?: string,"week_start"?: string,"went_well"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -244,6 +286,11 @@ isOneToOne: false
                            },
 "create_habit":
 { Args: { "p_area"?: string,"p_days": (number)[],"p_end_time"?: string,"p_frequency": string,"p_kind": string,"p_name": string,"p_start_time"?: string,"p_target": number,"p_times_per_week": number,"p_unit": string,"p_weight"?: number }; Returns: string
+                           },
+"due_reminders":
+{ Args: { "p_now"?: string }; Returns: {
+              "body": string,"day": string,"kind": string,"ref": string,"title": string,"url": string,"user_id": string
+            }[]
                            },
 "move_habit":
 { Args: { "p_direction": string,"p_habit_id": string }; Returns: undefined

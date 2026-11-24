@@ -120,6 +120,16 @@ export function SettingsPage() {
         </div>
       </section>
 
+      <section className="stack" aria-labelledby="revision">
+        <h2 id="revision">Revisión semanal</h2>
+        <p className="muted">Mira cómo fue la semana y escribe qué mantener y qué mejorar.</p>
+        <div className="row">
+          <Link className="btn" to="/revision">
+            Hacer la revisión
+          </Link>
+        </div>
+      </section>
+
       <ExportCard />
 
       <TrashSection />
