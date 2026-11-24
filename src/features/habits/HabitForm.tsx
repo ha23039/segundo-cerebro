@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { Weekday } from '../../lib/dates'
 import { AREAS, DEFAULT_AREA, type AreaId } from './domain/areas'
 import { WEEKDAYS } from './domain/format'
+import type { HabitPreset } from './domain/presets'
 import type { Habit } from './domain/types'
 import { validateHabit, type HabitErrors, type HabitInput } from './schema'
 
@@ -13,6 +14,8 @@ const WEIGHTS = [
 
 interface Props {
   initial?: Habit
+  /** Valores de partida al crear (una plantilla). Se ignora al editar. */
+  preset?: HabitPreset
   busy: boolean
   serverError: string | null
   onSubmit(input: HabitInput): void
@@ -28,14 +31,14 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   )
 }
 
-export function HabitForm({ initial, busy, serverError, onSubmit, onCancel }: Props) {
-  const freq = initial?.template.frequency
-  const [name, setName] = useState(initial?.name ?? '')
-  const [kind, setKind] = useState<'check' | 'cantidad'>(initial?.kind ?? 'check')
-  const [area, setArea] = useState<AreaId>(initial?.area ?? DEFAULT_AREA)
+export function HabitForm({ initial, preset, busy, serverError, onSubmit, onCancel }: Props) {
+  const freq = initial?.template.frequency ?? preset?.frequency
+  const [name, setName] = useState(initial?.name ?? preset?.name ?? '')
+  const [kind, setKind] = useState<'check' | 'cantidad'>(initial?.kind ?? preset?.kind ?? 'check')
+  const [area, setArea] = useState<AreaId>(initial?.area ?? preset?.area ?? DEFAULT_AREA)
   const [weight, setWeight] = useState(initial?.weight ?? 3)
-  const [unit, setUnit] = useState(initial?.unit ?? '')
-  const [target, setTarget] = useState(initial?.template.target?.toString() ?? '')
+  const [unit, setUnit] = useState(initial?.unit ?? preset?.unit ?? '')
+  const [target, setTarget] = useState((initial?.template.target ?? preset?.target)?.toString() ?? '')
   const [freqKind, setFreqKind] = useState<'dias' | 'semanal'>(freq?.kind ?? 'dias')
   const [days, setDays] = useState<Weekday[]>(freq?.kind === 'dias' ? freq.days : [])
   const [perWeek, setPerWeek] = useState(freq?.kind === 'semanal' ? String(freq.timesPerWeek) : '3')
