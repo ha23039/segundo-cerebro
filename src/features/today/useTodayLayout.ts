@@ -4,7 +4,7 @@ import { useAuth } from '../auth/useAuth'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_LAYOUT, resolveLayout, type TodayLayout } from './domain/layout'
 
-type Profile = { timezone: string; today_layout: unknown }
+type Profile = { timezone: string; today_layout: unknown; reminders: unknown }
 
 /** Orden y visibilidad de las tarjetas de Hoy. Cambia al instante (optimista) y se guarda en el perfil. */
 export function useTodayLayout() {

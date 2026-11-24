@@ -6,6 +6,8 @@ config({ path: '.env.local', quiet: true })
 const PORT = 4173
 // E2E_BASE_URL permite probar contra otro servidor (p. ej. `wrangler dev`, que aplica _headers)
 const external = process.env.E2E_BASE_URL
+// Clave pública VAPID de prueba (solo para que la app ofrezca los avisos en los tests; no corresponde a ningún servidor)
+const TEST_VAPID_PUBLIC_KEY = 'BAktuHQYM8lZWKND3uW17SqJYhUFST9ndEALW6lxJi6iarPzbuXir7qrB4_5qvduyTYgTeYrB-w1qikLPXfSGcQ'
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,7 +29,7 @@ export default defineConfig({
   webServer: external
     ? undefined
     : {
-        command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
+        command: `VITE_VAPID_PUBLIC_KEY=${TEST_VAPID_PUBLIC_KEY} npm run build && npm run preview -- --port ${PORT} --strictPort`,
         url: `http://localhost:${PORT}`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

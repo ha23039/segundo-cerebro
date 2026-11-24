@@ -38,6 +38,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        // Recibir y mostrar los recordatorios push (el service worker lo genera Workbox)
+        importScripts: ['push-sw.js'],
         navigateFallback: '/index.html',
         // Supabase nunca se cachea en el service worker: los datos sin red salen de IndexedDB
         runtimeCaching: [],
@@ -47,7 +49,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
     env: {
       VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',

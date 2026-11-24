@@ -4,6 +4,7 @@ import { toMessage } from '../../lib/errors'
 import { getThemePrefs, setMode, setPalette, type Mode, type Palette } from '../../lib/theme'
 import { useAuth } from '../auth/useAuth'
 import { ExportCard } from '../export/ExportCard'
+import { RemindersCard } from '../reminders/RemindersCard'
 import { useOnline } from '../layout/useOnline'
 import { useProfile } from '../profile/useProfile'
 import { DEFAULT_TIMEZONE } from '../profile/useToday'
@@ -129,6 +130,8 @@ export function SettingsPage() {
           </Link>
         </div>
       </section>
+
+      <RemindersCard />
 
       <ExportCard />
 
