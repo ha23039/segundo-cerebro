@@ -12,6 +12,7 @@ interface Props {
   value: number | undefined
   done: boolean
   streak: Streak | null
+  /** Las omisiones necesitan red; marcar y cambiar cantidades funciona sin ella (se guarda al volver). */
   disabled: boolean
   /** Omisión justificada de ese día, si la hay. */
   skip: SkipReason | null
@@ -48,7 +49,7 @@ function Side({ habit, streak }: { habit: Habit; streak: Streak | null }) {
   )
 }
 
-function QuantityControl({ habit, period, value, disabled, onSet }: Pick<Props, 'habit' | 'period' | 'value' | 'disabled' | 'onSet'>) {
+function QuantityControl({ habit, period, value, onSet }: Pick<Props, 'habit' | 'period' | 'value' | 'onSet'>) {
   const current = value ?? 0
   // El padre usa key={current}: al cambiar el valor guardado, el borrador se reinicia
   const [draft, setDraft] = useState(String(current))
@@ -74,7 +75,7 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Pick<Props, 
         className="btn icon-btn"
         type="button"
         aria-label={`Restar 1 a ${habit.name}`}
-        disabled={disabled || current <= 0}
+        disabled={current <= 0}
         onClick={() => onSet(Math.max(0, current - 1) || null)}
       >
         <Icon name="minus" />
@@ -84,7 +85,6 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Pick<Props, 
         inputMode="decimal"
         aria-label={`Cantidad de ${habit.name}`}
         value={draft}
-        disabled={disabled}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={onKey}
@@ -93,7 +93,7 @@ function QuantityControl({ habit, period, value, disabled, onSet }: Pick<Props, 
         className="btn icon-btn"
         type="button"
         aria-label={`Sumar 1 a ${habit.name}`}
-        disabled={disabled || current >= MAX}
+        disabled={current >= MAX}
         onClick={() => onSet(current + 1)}
       >
         <Icon name="plus" />
@@ -177,7 +177,7 @@ export function HabitRow(props: Props) {
   if (habit.kind === 'check') {
     return (
       <li className={`today-row${done ? ' is-done' : ''}${picking ? ' is-picking' : ''}`}>
-        <button className="today-toggle" type="button" aria-pressed={done} disabled={disabled} onClick={() => onSet(done ? null : 1)}>
+        <button className="today-toggle" type="button" aria-pressed={done} onClick={() => onSet(done ? null : 1)}>
           <span className="check-box" aria-hidden="true">
             {done && <Icon name="check" size={14} />}
           </span>
@@ -214,7 +214,7 @@ export function HabitRow(props: Props) {
       {picking ? (
         <SkipPicker habit={habit} onPick={pick} onCancel={() => setPicking(false)} />
       ) : (
-        <QuantityControl key={value ?? 0} habit={habit} period={period} value={value} disabled={disabled} onSet={onSet} />
+        <QuantityControl key={value ?? 0} habit={habit} period={period} value={value} onSet={onSet} />
       )}
     </li>
   )

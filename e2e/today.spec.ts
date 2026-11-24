@@ -87,7 +87,7 @@ test('toques rápidos: la interfaz acaba igual que la base de datos', async ({ p
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('si falla la red al registrar, se revierte y avisa', async ({ page }) => {
+test('si falla la red al registrar, el cambio queda pendiente y se avisa', async ({ page }) => {
   await seedHabit(user, { name: 'Leer' })
   await login(page, user)
   await page.route('**/rest/v1/habit_logs*', (route) =>
@@ -95,21 +95,42 @@ test('si falla la red al registrar, se revierte y avisa', async ({ page }) => {
   )
   const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
   await toggle.click()
-  await expect(page.getByRole('alert')).toContainText('Sin conexión')
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  // No se pierde: se ve marcado y espera en la cola del dispositivo hasta poder enviarse
+  await expect(page.getByRole('status').filter({ hasText: 'Guardando 1 cambio' })).toBeVisible()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('sin conexión se ven los hábitos en solo lectura', async ({ page, context }) => {
+test('sin conexión se puede marcar un hábito y se guarda al volver', async ({ page, context }) => {
   await seedHabit(user, { name: 'Leer' })
   await login(page, user)
-  await row(page, 'Leer').getByRole('button', { name: 'Leer' }).click()
+  await expect(row(page, 'Leer')).toBeVisible()
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true))
   await page.waitForTimeout(1500) // throttle de la persistencia
   await context.setOffline(true)
   await page.reload()
   const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await toggle.click()
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
-  await expect(toggle).toBeDisabled()
+  await expect(page.getByRole('status').filter({ hasText: '1 cambio pendiente' })).toBeVisible()
+
+  // Aunque se cierre y se vuelva a abrir sin red, el cambio sigue ahí
+  await page.reload()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+
+  await context.setOffline(false)
+  await expect(page.getByText(/pendiente|Guardando/)).toBeHidden({ timeout: 20_000 })
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('sin conexión no se pueden omitir hábitos (eso sí necesita red)', async ({ page, context }) => {
+  await seedHabit(user, { name: 'Leer' })
+  await login(page, user)
+  await expect(row(page, 'Leer')).toBeVisible()
+  await context.setOffline(true)
+  await expect(row(page, 'Leer').getByRole('button', { name: 'Omitir' })).toBeHidden()
   await context.setOffline(false)
 })
 
@@ -141,8 +162,7 @@ test('sin red al día siguiente y con el token caducado sigue mostrando los dato
   await expect(page).not.toHaveURL(/\/login$/)
   const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
   await expect(toggle).toBeVisible()
-  await expect(toggle).toBeDisabled()
-  await expect(page.getByText('Sin conexión: solo lectura')).toBeVisible()
+  await expect(page.getByText('Sin conexión: puedes marcar hábitos')).toBeVisible()
   await context.setOffline(false)
 })
 
@@ -164,12 +184,12 @@ test('marcar no vuelve a descargar los registros', async ({ page }) => {
   expect(logReads).toBe(0)
 })
 
-test('si fallan dos toques encadenados, queda el último estado confirmado', async ({ page }) => {
+test('si falla la red en toques encadenados, queda el último estado y un solo cambio pendiente', async ({ page }) => {
   await seedHabit(user, { name: 'Leer' })
   await login(page, user)
   const toggle = row(page, 'Leer').getByRole('button', { name: 'Leer' })
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
-  // Las escrituras tardan y fallan; las lecturas también fallan para que no se corrija sola
+  // Las escrituras tardan y fallan por la red: no se pierden, esperan en la cola del dispositivo
   await page.route('**/rest/v1/habit_logs*', async (route) => {
     await new Promise((r) => setTimeout(r, 300))
     await route.abort()
@@ -177,7 +197,9 @@ test('si fallan dos toques encadenados, queda el último estado confirmado', asy
   await toggle.click() // marcar
   await toggle.click() // desmarcar
   await toggle.click() // marcar
-  await expect(page.getByRole('alert')).toBeVisible()
+  // Los tres toques se reducen a lo último que se pidió: un único cambio, marcado
+  await expect(page.getByRole('status').filter({ hasText: 'Guardando 1 cambio' })).toBeVisible()
   await page.waitForTimeout(1500)
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('status').filter({ hasText: 'Guardando 1 cambio' })).toBeVisible()
 })
