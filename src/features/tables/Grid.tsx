@@ -47,13 +47,18 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
 
   const findCell = (r: number, c: number) => wrapRef.current?.querySelector<HTMLElement>(`[data-cell="${r}-${c}"]`)
 
+  const focusToken = useRef(0)
+
   /** Enfoca ya (la celda existe) y, por si el navegador lo pierde, lo reintenta en el siguiente cuadro. */
   const focusCell = (r: number, c: number, now = false) => {
+    const token = ++focusToken.current
     if (now) findCell(r, c)?.focus()
     requestAnimationFrame(() => {
+      // Un movimiento posterior manda: un reintento antiguo nunca le quita el foco
+      if (token !== focusToken.current) return
       const el = findCell(r, c)
       const a = document.activeElement
-      if (el && a !== el && (!a || a === document.body || wrapRef.current?.contains(a))) el.focus()
+      if (el && a !== el && (!a || a === document.body)) el.focus()
     })
   }
 

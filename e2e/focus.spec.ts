@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createTestUser, expectNoA11yViolations, login, madridDate, reloadSaved, seedFocusSessions, seedHabit, type TestUser } from './helpers'
+import { createTestUser, expectNoA11yViolations, login, madridDate, reloadSaved, seedFocusSessions, seedHabit, type TestUser, lastMadridMidnight } from './helpers'
 
 let user: TestUser
 
@@ -14,9 +14,13 @@ async function seedTimer(page: Page, minutesAgo: number, planned: number, kind: 
   await reloadSaved(page)
 }
 
+/** Minutos transcurridos del día en Madrid. Una sesión sembrada «hace N minutos» cuenta en el día en que empezó: justo después de medianoche sería el anterior. */
+const madridMinutes = () => (Date.now() - lastMadridMidnight().getTime()) / 60_000
+
 const card = (page: Page) => page.getByRole('region', { name: 'Foco' })
 
 test('un foco en curso sobrevive a la recarga y al detenerlo se guardan los minutos reales', async ({ page }) => {
+  test.skip(madridMinutes() < 15, 'La sesión sembrada empezaría el día anterior (justo después de medianoche en Madrid)')
   await seedHabit(user, { name: 'Estudiar' })
   await login(page, user)
   await seedTimer(page, 10, 25)
@@ -33,6 +37,7 @@ test('un foco en curso sobrevive a la recarga y al detenerlo se guardan los minu
 })
 
 test('si terminó mientras la app estaba cerrada, se guarda una vez con el tiempo planificado', async ({ page }) => {
+  test.skip(madridMinutes() < 40, 'La sesión sembrada empezaría el día anterior (justo después de medianoche en Madrid)')
   await login(page, user)
   await seedTimer(page, 30, 25)
 
