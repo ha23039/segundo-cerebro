@@ -19,10 +19,10 @@ select is((select weight from public.habits where id = (select id from ids where
 select throws_ok($$select public.create_habit('X', 'check', null, 'dias', '{1}', null, null, null, 9::smallint)$$, '23514', null, 'peso fuera de 1..5 falla');
 
 insert into public.daily_priorities (date, position, title) values
-  (current_date, 1, 'Cerrar el informe'), (current_date, 2, 'Llamar a casa'), (current_date, 3, 'Revisar gastos');
-select throws_ok($$insert into public.daily_priorities (date, position, title) values (current_date, 4, 'Cuarta')$$, '23514', null, 'máximo 3 prioridades por día');
-select throws_ok($$insert into public.daily_priorities (date, position, title) values (current_date, 1, 'Repetida')$$, '23505', null, 'una prioridad por posición');
-select throws_ok($$insert into public.daily_priorities (date, position, title) values (current_date + 1, 1, '   ')$$, '23514', null, 'título vacío falla');
+  (private.user_today(), 1, 'Cerrar el informe'), (private.user_today(), 2, 'Llamar a casa'), (private.user_today(), 3, 'Revisar gastos');
+select throws_ok($$insert into public.daily_priorities (date, position, title) values (private.user_today(), 4, 'Cuarta')$$, '23514', null, 'máximo 3 prioridades por día');
+select throws_ok($$insert into public.daily_priorities (date, position, title) values (private.user_today(), 1, 'Repetida')$$, '23505', null, 'una prioridad por posición');
+select throws_ok($$insert into public.daily_priorities (date, position, title) values (private.user_today() + 1, 1, '   ')$$, '23514', null, 'título vacío falla');
 
 set local request.jwt.claims = '{"sub":"eeeeeeee-4444-0000-0000-000000000002","role":"authenticated"}';
 select is((select count(*)::int from public.daily_priorities), 0, 'B no ve las prioridades de A');

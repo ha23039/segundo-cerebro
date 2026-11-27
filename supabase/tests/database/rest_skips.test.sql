@@ -19,20 +19,20 @@ set local request.jwt.claims = '{"sub":"ffffffff-5555-0000-0000-000000000001","r
 insert into ids values ('h', public.create_habit('Correr', 'check', null, 'dias', '{1,2,3,4,5,6,7}', null, null));
 
 -- Descanso: hoy, planificado a futuro y corrigiendo el pasado reciente
-select lives_ok($$insert into public.rest_days (date, note) values (current_date, 'Domingo libre')$$, 'descanso hoy');
-select lives_ok($$insert into public.rest_days (date) values (current_date + 30)$$, 'descanso planificado a 30 días');
-select throws_ok($$insert into public.rest_days (date) values (current_date + 91)$$, '23514', null, 'no más de 90 días adelante');
-select throws_ok($$insert into public.rest_days (date) values (current_date - 8)$$, '23514', null, 'no más de 7 días atrás');
-select throws_ok($$insert into public.rest_days (date) values (current_date)$$, '23505', null, 'un descanso por día');
-select throws_ok($$insert into public.rest_days (date, note) values (current_date + 1, '   ')$$, '23514', null, 'nota vacía falla');
+select lives_ok($$insert into public.rest_days (date, note) values (private.user_today(), 'Domingo libre')$$, 'descanso hoy');
+select lives_ok($$insert into public.rest_days (date) values (private.user_today() + 30)$$, 'descanso planificado a 30 días');
+select throws_ok($$insert into public.rest_days (date) values (private.user_today() + 91)$$, '23514', null, 'no más de 90 días adelante');
+select throws_ok($$insert into public.rest_days (date) values (private.user_today() - 8)$$, '23514', null, 'no más de 7 días atrás');
+select throws_ok($$insert into public.rest_days (date) values (private.user_today())$$, '23505', null, 'un descanso por día');
+select throws_ok($$insert into public.rest_days (date, note) values (private.user_today() + 1, '   ')$$, '23514', null, 'nota vacía falla');
 
 -- Omisión justificada
 select lives_ok(
-  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), current_date - 1, 'enfermedad')$$,
+  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), private.user_today() - 1, 'enfermedad')$$,
   'omitir un hábito ayer'
 );
 select throws_ok(
-  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), current_date, 'pereza')$$,
+  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), private.user_today(), 'pereza')$$,
   '23514', null, 'motivo fuera de la lista falla'
 );
 
@@ -41,7 +41,7 @@ set local request.jwt.claims = '{"sub":"ffffffff-5555-0000-0000-000000000002","r
 select is((select count(*)::int from public.rest_days), 0, 'B no ve los descansos de A');
 select is((select count(*)::int from public.habit_skips), 0, 'B no ve las omisiones de A');
 select throws_ok(
-  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), current_date, 'viaje')$$,
+  $$insert into public.habit_skips (habit_id, date, reason) values ((select id from ids where name = 'h'), private.user_today(), 'viaje')$$,
   '23503', null, 'B no puede omitir un hábito de A'
 );
 delete from public.rest_days;
