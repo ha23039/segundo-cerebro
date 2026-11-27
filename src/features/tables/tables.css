@@ -1,0 +1,52 @@
+.tables-view, .table-page { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.table-page h1, .table-page p { margin: 0; }
+.tables-new { display: flex; flex-direction: column; gap: 14px; }
+.tables-template { align-items: flex-start; }
+.tables-template-desc { display: block; }
+
+.table-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.table-sort { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.table-sort label { margin: 0; }
+.table-sort select { width: auto; min-width: 0; max-width: 100%; }
+.table-danger { margin-top: 16px; }
+
+/* ---- Hoja ---- */
+.grid-wrap { overflow: auto; max-width: 100%; max-height: 70vh; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.grid { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 0.95rem; }
+.grid th, .grid td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0; text-align: left; vertical-align: middle; min-width: 120px; background: var(--surface); }
+.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+.grid .grid-corner, .grid .grid-rownum { position: sticky; left: 0; z-index: 1; min-width: 44px; width: 44px; text-align: center; color: var(--muted); font-weight: 500; background: var(--bg); }
+.grid thead .grid-corner { z-index: 3; }
+.grid .grid-actions-head, .grid .grid-actions { min-width: 96px; border-right: 0; padding: 0 6px; }
+.grid tfoot td, .grid tfoot th { position: sticky; bottom: 0; z-index: 1; background: var(--bg); border-bottom: 0; }
+.grid tfoot .grid-rownum { z-index: 2; }
+.grid-foot { padding: 8px 10px; font-weight: 600; }
+
+.grid-head { display: flex; flex-direction: column; align-items: flex-start; gap: 0; width: 100%; min-height: 44px; padding: 6px 10px; background: none; border: 0; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.grid-head-name { overflow-wrap: anywhere; }
+
+.cell-btn, .cell-input, .cell-select { display: block; width: 100%; min-height: 44px; padding: 8px 10px; background: transparent; border: 0; border-radius: 0; color: var(--text); font: inherit; text-align: left; margin: 0; }
+.cell-btn { cursor: cell; overflow-wrap: anywhere; }
+.cell-btn.is-num, .grid .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cell-btn.is-error { color: var(--danger); font-weight: 600; }
+.cell-input, .cell-select { cursor: text; }
+.cell-btn:focus-visible, .cell-input:focus-visible, .cell-select:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.cell-check.is-on { color: var(--primary); font-weight: 700; }
+.cell-check { text-align: center; }
+.grid td.is-formula { background: var(--bg); }
+.grid-confirm { display: inline-flex; gap: 6px; flex-wrap: nowrap; }
+
+/* ---- Diálogos ---- */
+.items-dialog, .column-dialog { width: min(92vw, 460px); max-height: 88vh; overflow: auto; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); }
+.items-dialog::backdrop, .column-dialog::backdrop { background: color-mix(in srgb, var(--text) 45%, transparent); }
+.items-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.items-head h2 { margin: 0; font-size: 1.1rem; overflow-wrap: anywhere; }
+.items-list { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.items-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.items-check { display: flex; align-items: center; gap: 10px; margin: 0; font-weight: 400; min-height: var(--tap); flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.items-check input { width: 22px; height: 22px; min-height: 0; flex: none; }
+.items-check .is-done { text-decoration: line-through; color: var(--muted); }
+.items-add { display: flex; gap: 8px; }
+.items-add input { flex: 1; min-width: 0; }
+.formula-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.column-extra { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 12px; }

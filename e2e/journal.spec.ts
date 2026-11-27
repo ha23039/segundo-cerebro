@@ -9,7 +9,7 @@ test.beforeEach(async () => {
 
 const openJournal = async (page: Page) => {
   await page.goto('/diario')
-  await expect(page.getByRole('heading', { name: 'Diario y notas', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Diario, notas y tablas', level: 1 })).toBeVisible()
 }
 
 test('escribir, editar y eliminar la entrada de hoy', async ({ page }) => {
@@ -115,7 +115,7 @@ test('Hoy enlaza al diario y a las notas', async ({ page }) => {
   const card = page.getByRole('region', { name: 'Diario' })
   await expect(card).toBeVisible()
   await card.getByRole('link', { name: 'Escribir hoy' }).click()
-  await expect(page.getByRole('heading', { name: 'Diario y notas', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Diario, notas y tablas', level: 1 })).toBeVisible()
 })
 
 test('a 320 px diario, notas y editor no desbordan', async ({ page }) => {

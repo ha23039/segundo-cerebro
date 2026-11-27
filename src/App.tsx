@@ -15,6 +15,7 @@ import { ReportPage } from './features/report/ReportPage'
 import { ReviewPage } from './features/review/ReviewPage'
 import { RouteErrorView } from './features/layout/RouteError'
 import { StatsPage } from './features/stats/StatsPage'
+import { TablePage } from './features/tables/TablePage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TodayPage } from './features/today/TodayPage'
 import { AppQueryProvider } from './lib/AppQueryProvider'
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
       { path: 'estadisticas', element: <StatsPage /> },
       { path: 'diario', element: <JournalPage /> },
       { path: 'notas/:id', element: <NotePage /> },
+      { path: 'tablas/:id', element: <TablePage /> },
       { path: 'informe', element: <ReportPage /> },
       { path: 'revision', element: <ReviewPage /> },
       { path: 'ajustes', element: <SettingsPage /> },
