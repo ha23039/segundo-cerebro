@@ -23,6 +23,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - `journal_entries`: fecha (única por usuario), texto ≤ 2000 caracteres.
 - `notes`: título, cuerpo en Markdown, etiquetas (`text[]`), búsqueda de texto completo en español, `deleted_at`.
 - `weekly_reviews`: semana (lunes), qué fue bien (≤ 1000), qué mejorar (≤ 1000), foco de la próxima (≤ 500). Única por (usuario, semana).
+- `journal_tables`, `journal_columns`, `journal_rows`: tablas tipo hoja de cálculo (ver H12). Las celdas viven en un jsonb por fila, `{id de columna: valor}`.
 - `push_subscriptions`: endpoint https y claves de cada dispositivo suscrito. `reminder_log`: avisos ya enviados (solo el servicio). `profiles.reminders`: preferencias de avisos.
 - Validación en el cliente y restricciones en la BD (longitudes, `check`, valores > 0).
 
@@ -73,7 +74,7 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - Script de restauración documentado y probado contra Supabase local.
 - En Ajustes: "Descargar mis datos" en JSON y CSV (solo exportar, sin importar en la app).
 - Informe imprimible (semana / mes / histórico) con CSS de impresión, para guardarlo como PDF desde iOS.
-- **Cómo se resuelve** *(decisión de Claude, 2026-11-21)*: el respaldo semanal lleva el esquema `public` completo (esquema + datos), sin tablas de `auth` (ni sesiones ni contraseñas); la restauración exige una base vacía con el esquema aplicado y la cuenta creada con el mismo id (`USER_ID`), y es transaccional. Se cifra con age (clave pública en GitHub, privada solo en el gestor del usuario) y se sube a R2 (conserva 12). «Tus datos» en Ajustes exporta las 13 tablas en JSON o en un zip de CSV generados en el dispositivo (CSV con BOM y protección contra fórmulas). El informe imprimible (`/informe`) cubre esta semana, este mes, el mes anterior o todo el historial, y la impresión siempre es clara. Guía completa en `docs/respaldo.md`.
+- **Cómo se resuelve** *(decisión de Claude, 2026-11-21)*: el respaldo semanal lleva el esquema `public` completo (esquema + datos), sin tablas de `auth` (ni sesiones ni contraseñas); la restauración exige una base vacía con el esquema aplicado y la cuenta creada con el mismo id (`USER_ID`), y es transaccional. Se cifra con age (clave pública en GitHub, privada solo en el gestor del usuario) y se sube a R2 (conserva 12). «Tus datos» en Ajustes exporta las 16 tablas en JSON o en un zip de CSV generados en el dispositivo (CSV con BOM y protección contra fórmulas). El informe imprimible (`/informe`) cubre esta semana, este mes, el mes anterior o todo el historial, y la impresión siempre es clara. Guía completa en `docs/respaldo.md`.
 
 **H9 Recordatorios.** Recibo avisos en el iPhone sin tener la app abierta. *(Decisión de Claude, 2026-11-24)*
 - Notificaciones Web Push (iOS 16.4 o posterior, app instalada). Tres avisos, activables por separado: a la hora de inicio de cada hábito con horario, repaso de la tarde (por defecto 21:00, «Te quedan N hábitos») y revisión semanal (domingo 19:00). Preferencias en `profiles.reminders`, dispositivos en `push_subscriptions`.
@@ -86,6 +87,13 @@ App personal de hábitos y disciplina diaria. Un solo usuario, uso diario durant
 - Al crear un hábito, nueve plantillas (beber agua, dormir a mi hora, entrenar, caminar, estudiar, leer, trabajo profundo, revisar gastos, meditar u orar) cargan el formulario; se pueden cambiar antes de guardar. No crean nada por sí solas.
 - Atajos de pulsación larga del icono (Android y escritorio): marcar hábitos, iniciar foco, diario y nuevo hábito. iOS no admite atajos de pulsación larga en iconos de apps web; los mismos enlaces (`/?accion=foco`, `/?accion=habitos`, `/diario`, `/habitos/nuevo`) funcionan como marcadores o desde la app Atajos, pero allí se abren en Safari, no en la app instalada.
 - «Congelar un día» ya existe: son los días de descanso y las omisiones justificadas (no rompen rachas ni puntúan).
+
+**H12 Tablas (journals tipo hoja de cálculo).** Llevo journals de trading, gastos, gimnasio… en tablas con mis propias columnas. *(Decisión de Claude, 2026-11-27)*
+- Pestaña «Tablas» del diario (`/diario?vista=tablas`) y pantalla `/tablas/:id`. Varias tablas (hasta 30), cada una con hasta 30 columnas y 5000 filas. Se crean en blanco o desde una plantilla de columnas (Trading, Gastos); ninguna trae filas de ejemplo. Borrar una tabla la manda a la papelera 30 días (purga con `pg_cron`).
+- Tipos de columna: texto (≤ 500), número (coma o punto decimal, con decimales opcionales), fecha, lista de opciones, casilla, lista de ítems (hasta 50, tachables, en un diálogo) y fórmula. El tipo no se cambia tras crear la columna. Nombres únicos por tabla sin distinguir mayúsculas (las fórmulas citan columnas por nombre; renombrar una actualiza las fórmulas que la usan). Cada columna numérica o de fórmula puede mostrar la suma o la media al pie.
+- Edición: se toca una celda y se escribe. Con teclado: flechas para moverse, Enter o F2 para editar, escribir para reemplazar, Supr para vaciar, Enter y Tab para pasar a la celda de abajo o de la derecha, Escape para cancelar. Listas, fechas y casillas se cambian directamente. Se puede ordenar la vista por una columna (las vacías van al final) sin cambiar el orden guardado. Las celdas se guardan de una en una (`set_cell`, atómico y validado por tipo en la BD), así que dos dispositivos que editan celdas distintas no se pisan.
+- **Fórmulas**: lenguaje propio y seguro, sin `eval`: `+ - * /`, paréntesis, `{Columna}`, `ABS`, `ROUND(x, n)` y, sobre toda la columna, `SUM`, `AVG`, `MIN`, `MAX` y `COUNT` (ignoran las vacías). Si falta un dato la celda queda vacía (no 0); dividir entre cero da `#DIV/0`, una columna inexistente `#REF`, una no numérica `#TIPO` y las referencias circulares `#CICLO`. Se calculan en la app, nunca en la BD.
+- Sin conexión las tablas se ven pero no se editan (la cola sin conexión solo cubre registros de hábitos). Entran en «Tus datos» y en el respaldo.
 
 ## Seguridad y calidad (aplica a todas las fases)
 - RLS activado en todas las tablas, con tests de que otro usuario no ve ni escribe datos ajenos.
