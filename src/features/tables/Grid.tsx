@@ -37,6 +37,8 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
   const [error, setError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
   const cancelled = useRef(false)
+  // Lo escrito antes de que el campo de edición esté en pantalla (teclear rápido tras Enter) no se pierde
+  const editRef = useRef<{ r: number; c: number; draft: string } | null>(null)
 
   const maxR = rows.length - 1
   const maxC = columns.length - 1
@@ -71,6 +73,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
     }
     setError(null)
     if (!sameValue(row.cells[col.id], res.value)) onSet(row.id, col.id, res.value)
+    editRef.current = null
     setEditing(null)
     if (then === 'down') moveTo(r + 1, c)
     else if (then === 'right') moveTo(r, c + 1)
@@ -84,12 +87,24 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
     if (col.type !== 'texto' && col.type !== 'numero') return
     setActive({ r, c })
     setError(null)
-    setEditing({ r, c, draft: draft ?? draftOf(col, rows[r].cells[col.id]) })
+    const start = { r, c, draft: draft ?? draftOf(col, rows[r].cells[col.id]) }
+    editRef.current = start
+    setEditing(start)
   }
 
   function onCellKey(e: KeyboardEvent<HTMLElement>, r: number, c: number) {
     const col = columns[c]
     const row = rows[r]
+    const pending = editRef.current
+    if (pending && pending.r === r && pending.c === c) {
+      // La edición ya empezó pero el campo aún no está: se recogen las teclas en el borrador
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) pending.draft += e.key
+      else if (e.key === 'Backspace') pending.draft = pending.draft.slice(0, -1)
+      else return
+      e.preventDefault()
+      setEditing({ ...pending })
+      return
+    }
     const nav: Record<string, [number, number]> = { ArrowUp: [r - 1, c], ArrowDown: [r + 1, c], ArrowLeft: [r, c - 1], ArrowRight: [r, c + 1] }
     if (nav[e.key]) {
       e.preventDefault()
@@ -183,6 +198,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
                             commit(r, c, e.currentTarget.value, 'right')
                           } else if (e.key === 'Escape') {
                             cancelled.current = true
+                            editRef.current = null
                             setEditing(null)
                             setError(null)
                             focusCell(r, c)
