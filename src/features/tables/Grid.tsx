@@ -23,7 +23,7 @@ function draftOf(col: TableColumn, v: CellValue): string {
   return typeof v === 'string' ? v : ''
 }
 
-const typeHint = (col: TableColumn) => (col.type === 'formula' ? 'fórmula' : col.type === 'items' ? 'lista de ítems' : col.type === 'lista' ? 'lista' : col.type)
+const typeHint = (col: TableColumn) => ({ texto: 'texto', numero: 'número', fecha: 'fecha', lista: 'lista', casilla: 'casilla', items: 'ítems', formula: 'fórmula' })[col.type]
 
 /**
  * Hoja de cálculo: toca una celda para escribir; con teclado, flechas para moverte, Enter o F2 para editar, escribir
