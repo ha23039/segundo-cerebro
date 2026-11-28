@@ -157,6 +157,26 @@ isOneToOne: false
       referencedColumns: ["id","user_id"]
     }
                   ]
+                },"journal_columns": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"options": NonNullable<Json>,"position": number,"table_id": string,"type": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"options"?: NonNullable<Json>,"position"?: number,"table_id": string,"type": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"options"?: NonNullable<Json>,"position"?: number,"table_id"?: string,"type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "journal_columns_table_id_user_id_fkey"
+      columns: ["table_id","user_id"]
+isOneToOne: false
+      referencedRelation: "journal_tables"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
                 },"journal_entries": {
                   Row: {
                     "body": string,"created_at": string,"entry_date": string,"id": string,"updated_at": string,"user_id": string
@@ -167,6 +187,40 @@ isOneToOne: false
                   }
                   Update: {
                     "body"?: string,"created_at"?: string,"entry_date"?: string,"id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"journal_rows": {
+                  Row: {
+                    "cells": NonNullable<Json>,"created_at": string,"id": string,"table_id": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cells"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"table_id": string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "cells"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"table_id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "journal_rows_table_id_user_id_fkey"
+      columns: ["table_id","user_id"]
+isOneToOne: false
+      referencedRelation: "journal_tables"
+      referencedColumns: ["id","user_id"]
+    }
+                  ]
+                },"journal_tables": {
+                  Row: {
+                    "created_at": string,"deleted_at": string | null,"id": string,"name": string,"position": number,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name": string,"position"?: number,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name"?: string,"position"?: number,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -294,6 +348,9 @@ isOneToOne: false
                            },
 "move_habit":
 { Args: { "p_direction": string,"p_habit_id": string }; Returns: undefined
+                           },
+"set_cell":
+{ Args: { "p_column": string,"p_row": string,"p_value": Json }; Returns: undefined
                            },
 "unarchive_habit":
 { Args: { "p_habit_id": string }; Returns: undefined

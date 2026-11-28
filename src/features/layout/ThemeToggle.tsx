@@ -40,7 +40,7 @@ export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
           <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
         )}
       </svg>
-      {withLabel && <span>{dark ? 'Modo claro' : 'Modo oscuro'}</span>}
+      {withLabel && <span className="sidebar-text">{dark ? 'Modo claro' : 'Modo oscuro'}</span>}
     </button>
   )
 }

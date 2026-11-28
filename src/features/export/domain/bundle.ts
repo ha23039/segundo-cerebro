@@ -16,6 +16,9 @@ export const EXPORT_TABLES = [
   'journal_entries',
   'notes',
   'weekly_reviews',
+  'journal_tables',
+  'journal_columns',
+  'journal_rows',
 ] as const
 export type ExportTable = (typeof EXPORT_TABLES)[number]
 export type Row = Record<string, Cell>
@@ -36,6 +39,9 @@ export const PRIMARY_KEY: Record<ExportTable, string[]> = {
   journal_entries: ['id'],
   notes: ['id'],
   weekly_reviews: ['id'],
+  journal_tables: ['id'],
+  journal_columns: ['id'],
+  journal_rows: ['id'],
 }
 
 /** Columnas derivadas que no son datos del usuario (p. ej. el índice de búsqueda de las notas). */

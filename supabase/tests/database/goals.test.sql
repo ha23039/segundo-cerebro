@@ -18,15 +18,15 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"eeeeeeee-6666-0000-0000-000000000001","role":"authenticated"}';
 
 with x as (
-  insert into public.goals (title, due_date) values ('  Correr un 10K  ', current_date + 30) returning id
+  insert into public.goals (title, due_date) values ('  Correr un 10K  ', private.user_today() + 30) returning id
 )
 insert into ids select 'g', id from x;
 select is((select title from public.goals where id = (select id from ids where name = 'g')), '  Correr un 10K  ', 'crea un objetivo');
-select is((select start_date from public.goals where id = (select id from ids where name = 'g')), current_date, 'start_date por defecto es hoy');
+select is((select start_date from public.goals where id = (select id from ids where name = 'g')), private.user_today(), 'start_date por defecto es hoy');
 select is((select status from public.goals where id = (select id from ids where name = 'g')), 'activo', 'nace activo');
 
-select throws_ok($$insert into public.goals (title, due_date) values ('X', current_date - 1)$$, '23514', null, 'la fecha límite no puede ser anterior al inicio');
-select throws_ok($$insert into public.goals (title, due_date) values ('   ', current_date)$$, '23514', null, 'título vacío falla');
+select throws_ok($$insert into public.goals (title, due_date) values ('X', private.user_today() - 1)$$, '23514', null, 'la fecha límite no puede ser anterior al inicio');
+select throws_ok($$insert into public.goals (title, due_date) values ('   ', private.user_today())$$, '23514', null, 'título vacío falla');
 select throws_ok(
   $$update public.goals set status = 'completado' where id = (select id from ids where name = 'g')$$,
   '23514', null, 'completado exige completed_at'

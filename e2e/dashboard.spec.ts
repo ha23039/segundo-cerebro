@@ -62,6 +62,21 @@ test.describe('escritorio', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280)
   })
+
+  test('la barra lateral se contrae y recuerda el estado', async ({ page }) => {
+    await login(page, user)
+    const sidebar = page.locator('.sidebar')
+    const before = (await sidebar.boundingBox())!.width
+    await page.getByRole('button', { name: 'Contraer menú' }).click()
+    await expect(page.getByRole('button', { name: 'Expandir menú' })).toHaveAttribute('aria-expanded', 'false')
+    await expect.poll(async () => (await sidebar.boundingBox())!.width).toBeLessThan(before - 100)
+    // Los enlaces siguen teniendo nombre accesible
+    await expect(page.getByRole('link', { name: 'Hábitos' })).toBeVisible()
+    await page.reload()
+    await expect(page.getByRole('button', { name: 'Expandir menú' })).toBeVisible()
+    await page.getByRole('button', { name: 'Expandir menú' }).click()
+    await expect(page.getByRole('button', { name: 'Contraer menú' })).toBeVisible()
+  })
 })
 
 test('puntuación ponderada con prioridades: máximo 3 y persisten', async ({ page }) => {
