@@ -15,6 +15,9 @@ interface Props {
   total: number
   /** El panel de filtros se abre y cierra desde la barra; los filtros activos se ven siempre. */
   open: boolean
+  /** Columnas ocultas en este dispositivo. */
+  hidden: string[]
+  onToggleColumn(id: string): void
   /** Controles extra al principio del panel (p. ej. ordenar). */
   children?: ReactNode
   onChange(rules: FilterRule[]): void
@@ -32,7 +35,7 @@ function describe(rule: FilterRule, columns: readonly TableColumn[]): string {
 }
 
 /** Filtros de la tabla: atajos, reglas propias y vistas guardadas. */
-export function TableFilters({ columns, rules, saved, month, shown, total, open, children, onChange, onSaveView, onDeleteView }: Props) {
+export function TableFilters({ columns, rules, saved, month, shown, total, open, hidden, onToggleColumn, children, onChange, onSaveView, onDeleteView }: Props) {
   const [adding, setAdding] = useState(false)
   const [columnId, setColumnId] = useState('')
   const [op, setOp] = useState<FilterOp>('eq')
@@ -74,6 +77,23 @@ export function TableFilters({ columns, rules, saved, month, shown, total, open,
       {open && (
       <div id="table-filters-panel" className="filter-panel">
       {children}
+      <details className="col-picker">
+        <summary>
+          Columnas visibles ({columns.length - hidden.filter((h) => columns.some((c) => c.id === h)).length} de {columns.length})
+        </summary>
+        <div className="col-picker-list">
+          {columns.map((c) => {
+            const visible = !hidden.includes(c.id)
+            const onlyOne = visible && columns.length - hidden.length <= 1
+            return (
+              <label key={c.id} className="choice">
+                <input type="checkbox" checked={visible} disabled={onlyOne} onChange={() => onToggleColumn(c.id)} />
+                <span>{c.name}</span>
+              </label>
+            )
+          })}
+        </div>
+      </details>
       <div className="filter-row">
         <span className="eyebrow">Filtrar</span>
         {result && (

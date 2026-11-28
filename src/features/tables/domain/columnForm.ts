@@ -13,6 +13,8 @@ export interface ColumnFormInput {
   footer: Footer
   /** Valor por defecto de las filas nuevas (texto, número, opción, `hoy` o `si`). */
   defaultValue?: string
+  /** Colorear según el signo (solo número y fórmula). */
+  signTone?: boolean
 }
 
 export type ColumnFormErrors = Partial<Record<'name' | 'choices' | 'formula' | 'decimals' | 'default', string>>
@@ -48,8 +50,8 @@ export function validateColumnForm(input: ColumnFormInput, others: readonly Tabl
       if (!Number.isInteger(n) || n < 0 || n > 6) errors.decimals = 'Entre 0 y 6 decimales'
       else options.decimals = n
     }
-    if (input.footer !== 'ninguno') options.footer = input.footer
-    else options.footer = 'ninguno'
+    options.footer = input.footer
+    if (input.signTone) options.tone = 'signo'
   }
 
   if (input.type === 'formula') {

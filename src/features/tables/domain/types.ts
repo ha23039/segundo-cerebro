@@ -25,6 +25,8 @@ export interface ColumnOptions {
   formula?: string
   /** Valor de las filas nuevas: el texto o número, la opción, `hoy` en fechas o `si` en casillas. */
   default?: string
+  /** `signo`: verde si el valor es positivo, rojo si es negativo (número y fórmula). */
+  tone?: 'signo'
 }
 
 export interface TableColumn {

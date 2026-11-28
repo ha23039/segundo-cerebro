@@ -10,6 +10,8 @@ interface Stored {
   rules: FilterRule[]
   saved: SavedView[]
   groupBy: string
+  /** Ids de las columnas que no se muestran en este dispositivo. */
+  hidden: string[]
 }
 
 const key = (tableId: string) => `sc.tableview.${tableId}`
@@ -17,9 +19,9 @@ const key = (tableId: string) => `sc.tableview.${tableId}`
 function read(tableId: string): Stored {
   try {
     const raw = JSON.parse(localStorage.getItem(key(tableId)) ?? 'null') as Partial<Stored> | null
-    return { rules: Array.isArray(raw?.rules) ? raw.rules : [], saved: Array.isArray(raw?.saved) ? raw.saved : [], groupBy: typeof raw?.groupBy === 'string' ? raw.groupBy : '' }
+    return { rules: Array.isArray(raw?.rules) ? raw.rules : [], saved: Array.isArray(raw?.saved) ? raw.saved : [], groupBy: typeof raw?.groupBy === 'string' ? raw.groupBy : '', hidden: Array.isArray(raw?.hidden) ? raw.hidden : [] }
   } catch {
-    return { rules: [], saved: [], groupBy: '' }
+    return { rules: [], saved: [], groupBy: '', hidden: [] }
   }
 }
 
@@ -45,6 +47,8 @@ export function useTableView(tableId: string) {
     ...state,
     setRules: (rules: FilterRule[]) => update({ rules }),
     setGroupBy: (groupBy: string) => update({ groupBy }),
+    toggleColumn: (id: string) => update({ hidden: state.hidden.includes(id) ? state.hidden.filter((h) => h !== id) : [...state.hidden, id] }),
+    showAllColumns: () => update({ hidden: [] }),
     saveView: (name: string) => update({ saved: [...state.saved.filter((v) => v.name !== name), { name, rules: state.rules }] }),
     deleteView: (name: string) => update({ saved: state.saved.filter((v) => v.name !== name) }),
   }

@@ -21,11 +21,11 @@ export function tableToCsv(columns: readonly TableColumn[], rows: readonly Table
 }
 
 /** Lee un CSV (comillas, saltos de línea dentro de campos, BOM) detectando si separa con coma, punto y coma o tabulador. */
-export function parseCsv(input: string): string[][] {
+export function parseCsv(input: string, forcedSep?: string): string[][] {
   const text = input.replace(/^﻿/, '')
   const firstLine = text.split(/\r\n|\n|\r/, 1)[0] ?? ''
   const count = (ch: string) => firstLine.split(ch).length - 1
-  const sep = [';', '\t', ','].reduce((best, ch) => (count(ch) > count(best) ? ch : best), ',')
+  const sep = forcedSep ?? [';', '\t', ','].reduce((best, ch) => (count(ch) > count(best) ? ch : best), ',')
   const out: string[][] = []
   let row: string[] = []
   let field = ''
@@ -75,6 +75,37 @@ export function parseDate(s: string): string | null {
 
 const YES = new Set(['sí', 'si', 'x', 'true', 'verdadero', '1', 'yes', 'y'])
 
+/** Convierte un texto (de un CSV o del portapapeles) al valor de una celda; `undefined` si no encaja con el tipo. */
+export function convertCell(col: TableColumn, raw: string): Cells[string] {
+  // el apóstrofo que añade la exportación para proteger de fórmulas no forma parte del dato
+  const text = /^'[=+\-@]/.test(raw) ? raw.slice(1) : raw
+  switch (col.type) {
+    case 'texto':
+      return text.length > LIMITS.text ? undefined : text
+    case 'numero': {
+      const n = parseNumber(text)
+      return n !== null && Math.abs(n) <= LIMITS.numberMax ? n : undefined
+    }
+    case 'fecha':
+      return parseDate(text) ?? undefined
+    case 'lista':
+      return (col.options.choices ?? []).find((c) => c.toLowerCase() === text.toLowerCase())
+    case 'casilla':
+      return YES.has(text.toLowerCase()) ? true : undefined
+    case 'items': {
+      const items = text
+        .split(/\s*\|\s*/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .slice(0, LIMITS.items)
+        .map((t): Item => ({ t: t.replace(/^\[x\]\s*/i, '').slice(0, LIMITS.itemText), d: /^\[x\]/i.test(t) }))
+      return items.length ? items : undefined
+    }
+    default:
+      return undefined
+  }
+}
+
 export interface ImportPlan {
   /** Columnas de la tabla que reciben datos, en el orden del archivo. */
   matched: { header: string; column: TableColumn }[]
@@ -112,38 +143,10 @@ export function planImport(records: string[][], columns: readonly TableColumn[],
     index.forEach((col, i) => {
       const raw = (rec[i] ?? '').trim()
       if (!col || raw === '') return
-      // el apóstrofo que añade la exportación para proteger de fórmulas no forma parte del dato
-      const text = /^'[=+\-@]/.test(raw) ? raw.slice(1) : raw
-      let v: Cells[string]
-      switch (col.type) {
-        case 'texto':
-          v = text.length > LIMITS.text ? undefined : text
-          break
-        case 'numero': {
-          const n = parseNumber(text)
-          v = n !== null && Math.abs(n) <= LIMITS.numberMax ? n : undefined
-          break
-        }
-        case 'fecha':
-          v = parseDate(text) ?? undefined
-          break
-        case 'lista':
-          v = (col.options.choices ?? []).find((c) => c.toLowerCase() === text.toLowerCase())
-          break
-        case 'casilla':
-          v = YES.has(text.toLowerCase()) ? true : undefined
-          break
-        case 'items': {
-          const items = text.split(/\s*\|\s*/).map((t) => t.trim()).filter(Boolean).slice(0, LIMITS.items).map((t): Item => ({ t: t.replace(/^\[x\]\s*/i, '').slice(0, LIMITS.itemText), d: /^\[x\]/i.test(t) }))
-          v = items.length ? items : undefined
-          break
-        }
-        default:
-          v = undefined
-      }
+      const v = convertCell(col, raw)
       if (v === undefined) {
         // una casilla con otro valor ('no', '0') es simplemente vacía, no un error
-        if (!(col.type === 'casilla')) invalid++
+        if (col.type !== 'casilla') invalid++
       } else cells[col.id] = v
     })
     if (Object.keys(cells).length > 0) rows.push(cells)

@@ -1,6 +1,8 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react'
 import { displayCell, formatResult, sanitizeCell } from './domain/cells'
 import { ChoiceDialog } from './ChoiceDialog'
+import { numberOf } from './domain/analysis'
+import { convertCell, parseCsv } from './domain/csvTable'
 import { footerValue, type Computed } from './domain/formula'
 import type { CellValue, TableColumn, TableRow } from './domain/types'
 
@@ -40,6 +42,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
   const [cursor, setActive] = useState({ r: 0, c: 0 })
   const [editing, setEditing] = useState<{ r: number; c: number; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [picker, setPicker] = useState<{ r: number; c: number } | null>(null)
   const cancelled = useRef(false)
   // Lo escrito antes de que el campo de edición esté en pantalla (teclear rápido tras Enter) no se pierde
@@ -134,6 +137,43 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
     }
   }
 
+  /** Clase de color según el signo (solo en columnas que lo piden). */
+  function toneOf(col: TableColumn, row: TableRow): string {
+    if (col.options.tone !== 'signo') return ''
+    const n = numberOf(col, row, computed)
+    return n === null || n === 0 ? '' : n > 0 ? ' tone-pos' : ' tone-neg'
+  }
+
+  /** Pegar desde Excel o Google Sheets: el bloque entra desde la celda activa; lo que no encaja se cuenta y avisa. */
+  function onPaste(e: ClipboardEvent<HTMLDivElement>) {
+    const t = e.target as HTMLElement
+    if (disabled || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA') return
+    const text = e.clipboardData.getData('text/plain')
+    if (!text.trim()) return
+    e.preventDefault()
+    const block = parseCsv(text, '\t')
+    let pasted = 0
+    let invalid = 0
+    let outside = 0
+    block.forEach((rec, i) => {
+      const row = rows[active.r + i]
+      if (!row) {
+        outside++
+        return
+      }
+      rec.forEach((raw, j) => {
+        const col = columns[active.c + j]
+        if (!col || col.type === 'formula') return
+        const text = raw.trim()
+        const v = text === '' ? undefined : convertCell(col, text)
+        if (text !== '' && v === undefined && col.type !== 'casilla') return void invalid++
+        if (!sameValue(row.cells[col.id], v)) onSet(row.id, col.id, v)
+        pasted++
+      })
+    })
+    setNotice(`Pegadas ${pasted} celdas${invalid ? `; ${invalid} no encajan con su columna` : ''}${outside ? `; ${outside} filas quedaron fuera (añade filas antes de pegar)` : ''}.`)
+  }
+
   function openPicker(r: number, c: number) {
     if (disabled) return
     setActive({ r, c })
@@ -153,7 +193,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
 
   return (
     <>
-      <div ref={wrapRef} className="grid-wrap" role="region" aria-label={`Tabla ${name}`} tabIndex={0}>
+      <div ref={wrapRef} className="grid-wrap" role="region" aria-label={`Tabla ${name}`} tabIndex={0} onPaste={onPaste}>
         <table className="grid">
           <thead>
             <tr>
@@ -323,7 +363,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
                     )
                   }
                   return (
-                    <td key={col.id} className={col.type === 'formula' ? 'is-formula' : undefined}>
+                    <td key={col.id} className={`${col.type === 'formula' ? 'is-formula' : ''}${toneOf(col, row)}`.trim() || undefined}>
                       {body}
                     </td>
                   )
@@ -361,6 +401,11 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
       {error && (
         <p role="alert" className="error">
           {error}
+        </p>
+      )}
+      {notice && !error && (
+        <p role="status" className="muted small">
+          {notice}
         </p>
       )}
       {picker && columns[picker.c] && rows[picker.r] && (

@@ -144,3 +144,11 @@
 .row-dialog { scrollbar-width: none; }
 .row-dialog::-webkit-scrollbar { display: none; }
 .row-readonly { margin: 0; min-height: var(--tap); display: flex; align-items: center; padding: 0 12px; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Color según el signo: se tiñe la celda y el texto sigue en tinta normal, así el contraste no depende del verde ni del rojo */
+.grid td.tone-pos { background: color-mix(in srgb, var(--ok) 16%, var(--surface)); }
+.grid td.tone-neg { background: color-mix(in srgb, var(--danger) 16%, var(--surface)); }
+.sign-tone { align-self: center; }
+
+.col-picker > summary { min-height: 36px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
+.col-picker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 2px 12px; }

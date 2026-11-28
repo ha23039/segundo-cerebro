@@ -55,4 +55,9 @@ describe('validateColumnForm', () => {
     expect(validateColumnForm({ ...base, type: 'lista', choices: 'A\nB', defaultValue: 'B' }, others)).toMatchObject({ ok: true, value: { options: { choices: ['A', 'B'], default: 'B' } } })
     expect(validateColumnForm({ ...base, type: 'lista', choices: 'A\nB', defaultValue: 'Z' }, others)).toMatchObject({ ok: false, errors: { default: 'Elige una de las opciones de la lista' } })
   })
+
+  it('el color según el signo solo se guarda en columnas numéricas', () => {
+    expect(validateColumnForm({ ...base, type: 'numero', signTone: true }, others)).toMatchObject({ ok: true, value: { options: { tone: 'signo' } } })
+    expect(validateColumnForm({ ...base, type: 'texto', signTone: true }, others)).toEqual({ ok: true, value: { name: 'Nueva', type: 'texto', options: {} } })
+  })
 })

@@ -385,3 +385,41 @@ test('exportar una tabla a CSV e importarla de nuevo en otra', async ({ page }, 
   await expect(cell(page, 'Concepto', 2)).toContainText('Taxi')
   await expect(page.getByRole('combobox', { name: 'Categoría, fila 2' })).toHaveValue('')
 })
+
+test('color según el signo, columnas ocultas y pegar desde una hoja de cálculo', async ({ page }) => {
+  await newTable(page, 'Extras', /Trading/)
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await write(page, 'Resultado', '100', 1)
+  await write(page, 'Resultado', '-40', 2)
+  await expect(cell(page, 'Resultado', 1).locator('xpath=ancestor::td')).toHaveClass(/tone-pos/)
+  await expect(cell(page, 'Resultado', 2).locator('xpath=ancestor::td')).toHaveClass(/tone-neg/)
+  await expectNoA11yViolations(page)
+
+  // ocultar una columna solo en este dispositivo
+  await page.getByRole('button', { name: /^Filtros/ }).click()
+  await page.getByText(/^Columnas visibles/).click()
+  await page.getByRole('checkbox', { name: 'Notas' }).uncheck()
+  await expect(page.getByRole('button', { name: /Editar columna Notas/ })).toHaveCount(0)
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+  await expect(page.getByRole('button', { name: /Editar columna Notas/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Editar columna Par/ })).toBeVisible()
+
+  // pegar un bloque desde Excel o Google Sheets
+  await newTable(page, 'Pegar', /Gastos/)
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await cell(page, 'Concepto', 1).focus()
+  await page.evaluate(() => {
+    const dt = new DataTransfer()
+    dt.setData('text/plain', 'Taxi\tOcio\t12,5\nCena\tinventada\t30')
+    document.activeElement!.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
+  })
+  await expect(cell(page, 'Concepto', 1)).toContainText('Taxi')
+  await expect(cell(page, 'Importe', 1)).toContainText('12,5')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 1' })).toHaveValue('Ocio')
+  await expect(cell(page, 'Concepto', 2)).toContainText('Cena')
+  await expect(cell(page, 'Importe', 2)).toContainText('30')
+  await expect(page.getByRole('status').filter({ hasText: 'Pegadas' })).toContainText('1 no encajan')
+})

@@ -46,6 +46,10 @@ function TableView({ id }: { id: string }) {
   const data = query.data
   const columns = useMemo(() => data?.columns ?? [], [data])
   const rows = useMemo(() => data?.rows ?? [], [data])
+  const visibleColumns = useMemo(() => {
+    const shown = columns.filter((c) => !view.hidden.includes(c.id))
+    return shown.length ? shown : columns
+  }, [columns, view.hidden])
   const computed = useMemo(() => computeFormulas(columns, rows), [columns, rows])
 
   const filtered = useMemo(() => applyFilters(view.rules, columns, rows, computed), [view.rules, columns, rows, computed])
@@ -188,6 +192,8 @@ function TableView({ id }: { id: string }) {
         shown={filtered.length}
         total={rows.length}
         open={showFilters}
+        hidden={view.hidden}
+        onToggleColumn={view.toggleColumn}
         onChange={view.setRules}
         onSaveView={view.saveView}
         onDeleteView={view.deleteView}
@@ -221,7 +227,7 @@ function TableView({ id }: { id: string }) {
 
       <Grid
         name={data.table.name}
-        columns={columns}
+        columns={visibleColumns}
         rows={sorted}
         computed={computed}
         disabled={!online}

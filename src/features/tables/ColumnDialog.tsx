@@ -28,6 +28,7 @@ function initial(c: TableColumn | undefined): ColumnFormInput {
     decimals: c?.options.decimals === undefined ? '' : String(c.options.decimals),
     footer: c?.options.footer ?? 'ninguno',
     defaultValue: c?.options.default ?? '',
+    signTone: c?.options.tone === 'signo',
   }
 }
 
@@ -185,6 +186,10 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
                 </p>
               )}
             </div>
+            <label className="choice sign-tone">
+              <input type="checkbox" checked={!!form.signTone} onChange={(e) => set({ signTone: e.target.checked })} />
+              <span>Verde si es positivo y rojo si es negativo</span>
+            </label>
             <div>
               <label htmlFor="col-footer">Resumen al pie</label>
               <select id="col-footer" value={form.footer} onChange={(e) => set({ footer: e.target.value as Footer })}>
