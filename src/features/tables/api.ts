@@ -10,7 +10,7 @@ const PAGE = 1000
 // La columna `options` es jsonb; el tipo generado no distingue formas, así que se convierte en un solo sitio
 const asJson = (v: unknown) => v as NonNullable<Database['public']['Tables']['journal_columns']['Insert']['options']>
 
-const toTable = (r: TableDbRow): JournalTable => ({ id: r.id, name: r.name, position: r.position, deletedAt: r.deleted_at })
+const toTable = (r: TableDbRow & { journal_rows?: { count: number }[] }): JournalTable => ({ id: r.id, name: r.name, position: r.position, deletedAt: r.deleted_at, rowCount: r.journal_rows?.[0]?.count })
 const toColumn = (r: ColumnDbRow): TableColumn => ({
   id: r.id,
   tableId: r.table_id,
@@ -22,7 +22,7 @@ const toColumn = (r: ColumnDbRow): TableColumn => ({
 const toRow = (r: RowDbRow): TableRow => ({ id: r.id, tableId: r.table_id, cells: (r.cells ?? {}) as TableRow['cells'], createdAt: r.created_at })
 
 export async function fetchTables(): Promise<JournalTable[]> {
-  const { data, error } = await supabase.from('journal_tables').select('*').is('deleted_at', null).order('position').order('created_at')
+  const { data, error } = await supabase.from('journal_tables').select('*, journal_rows(count)').is('deleted_at', null).order('position').order('created_at')
   if (error) throw error
   return data.map(toTable)
 }

@@ -252,6 +252,13 @@ test('las tablas tienen su acceso directo en el menú y se crean desde ahí', as
   await page.getByRole('link', { name: 'Volver a las tablas' }).click()
   await expect(page).toHaveURL(/\/tablas$/)
   await expect(page.getByRole('link', { name: 'Gastos de casa' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Gastos de casa' })).toContainText('0 filas')
+
+  await page.getByRole('link', { name: 'Gastos de casa' }).click()
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await expect(page.getByRole('row')).toHaveCount(3) // cabecera, una fila y el pie
+  await page.getByRole('link', { name: 'Volver a las tablas' }).click()
+  await expect(page.getByRole('link', { name: 'Gastos de casa' })).toContainText('1 fila')
 })
 
 test('filtros, vistas guardadas y análisis de resultados', async ({ page }) => {

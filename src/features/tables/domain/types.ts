@@ -60,6 +60,8 @@ export interface JournalTable {
   name: string
   position: number
   deletedAt: string | null
+  /** Filas de la tabla; solo viene en el listado. */
+  rowCount?: number
 }
 
 export const LIMITS = {

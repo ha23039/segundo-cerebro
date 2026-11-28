@@ -30,6 +30,8 @@ export function useTableMutations(tableId: string) {
   const queryClient = useQueryClient()
   const key = ['tables', 'one', tableId]
   const refetch = () => queryClient.invalidateQueries({ queryKey: key })
+  // Solo el listado (recuento de filas): refrescar la propia tabla pisaría el cambio optimista
+  const refreshList = () => queryClient.invalidateQueries({ queryKey: ['tables', 'list'] })
 
   function patch(update: (d: api.TableData) => api.TableData) {
     queryClient.setQueryData<api.TableData | null>(key, (old) => (old ? update(old) : old))
@@ -60,16 +62,19 @@ export function useTableMutations(tableId: string) {
       scope: { id: `table-cells-${tableId}` },
       onMutate: (row) => patch((d) => ({ ...d, rows: [...d.rows, row] })),
       onError: refetch,
+      onSettled: refreshList,
     }),
     importRows: useMutation({
       mutationFn: (rows: { id: string; cells: Cells }[]) => api.insertRows(tableId, rows),
       onSuccess: refetch,
+      onSettled: refreshList,
     }),
     deleteRow: useMutation({
       mutationFn: (id: string) => api.deleteRow(id),
       scope: { id: `table-cells-${tableId}` },
       onMutate: (id) => patch((d) => ({ ...d, rows: d.rows.filter((r) => r.id !== id) })),
       onError: refetch,
+      onSettled: refreshList,
     }),
     addColumn: useMutation({ mutationFn: (c: api.NewColumn) => api.createColumn(tableId, c), onSuccess: refetch }),
     updateColumn: useMutation({

@@ -94,6 +94,7 @@ export function TablesView() {
             <li key={t.id}>
               <Link className="card note-item" to={`/tablas/${t.id}`}>
                 <span className="note-item-title">{t.name}</span>
+                {t.rowCount !== undefined && <span className="muted small"><span className="visually-hidden">, </span>{t.rowCount === 1 ? '1 fila' : `${t.rowCount} filas`}</span>}
               </Link>
             </li>
           ))}
