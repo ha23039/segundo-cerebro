@@ -176,29 +176,31 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
         )}
 
         {numeric && (
-          <div className="row two-cols">
-            <div>
-              <label htmlFor="col-decimals">Decimales</label>
-              <input id="col-decimals" inputMode="numeric" value={form.decimals} placeholder="Automático" aria-invalid={errors.decimals ? true : undefined} onChange={(e) => set({ decimals: e.target.value })} />
-              {errors.decimals && (
-                <p role="alert" className="error field-error">
-                  {errors.decimals}
-                </p>
-              )}
+          <>
+            <div className="row two-cols">
+              <div>
+                <label htmlFor="col-decimals">Decimales</label>
+                <input id="col-decimals" inputMode="numeric" value={form.decimals} placeholder="Automático" aria-invalid={errors.decimals ? true : undefined} onChange={(e) => set({ decimals: e.target.value })} />
+                {errors.decimals && (
+                  <p role="alert" className="error field-error">
+                    {errors.decimals}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="col-footer">Resumen al pie</label>
+                <select id="col-footer" value={form.footer} onChange={(e) => set({ footer: e.target.value as Footer })}>
+                  <option value="ninguno">Ninguno</option>
+                  <option value="suma">Suma</option>
+                  <option value="media">Media</option>
+                </select>
+              </div>
             </div>
             <label className="choice sign-tone">
               <input type="checkbox" checked={!!form.signTone} onChange={(e) => set({ signTone: e.target.checked })} />
               <span>Verde si es positivo y rojo si es negativo</span>
             </label>
-            <div>
-              <label htmlFor="col-footer">Resumen al pie</label>
-              <select id="col-footer" value={form.footer} onChange={(e) => set({ footer: e.target.value as Footer })}>
-                <option value="ninguno">Ninguno</option>
-                <option value="suma">Suma</option>
-                <option value="media">Media</option>
-              </select>
-            </div>
-          </div>
+          </>
         )}
 
         {error != null && (

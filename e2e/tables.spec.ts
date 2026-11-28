@@ -211,6 +211,12 @@ test('accesibilidad y 320 px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 })
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
   expect(overflow).toBe(false)
+
+  // el diálogo de una columna numérica (decimales, resumen, color por signo) no se sale ni a 320 px
+  await page.getByRole('button', { name: /Editar columna Entrada/ }).click()
+  const dlg = page.getByRole('dialog')
+  await expect(dlg.getByLabel('Resumen al pie')).toBeVisible()
+  expect(await dlg.evaluate((d) => d.scrollWidth <= d.clientWidth)).toBe(true)
 })
 
 test('una columna de texto se convierte en lista y conserva lo escrito', async ({ page }) => {
