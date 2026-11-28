@@ -255,7 +255,7 @@ test('filtros, vistas guardadas y análisis de resultados', async ({ page }) => 
   await write(page, 'Resultado', '20', 3)
 
   await page.getByText(/^Análisis de/).click()
-  const stats = page.locator('.stats')
+  const stats = page.locator('.an-stats')
   await expect(stats).toContainText('Operaciones3')
   await expect(stats).toContainText('Acierto67 %')
   await expect(stats).toContainText('Total80,00')

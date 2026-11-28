@@ -76,7 +76,8 @@
 }
 
 .bottom-nav-item {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,6 +88,20 @@
   text-decoration: none;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+/* Seis entradas: a 320 px cada una mide ~53 px, así que el texto se ajusta en lugar de empujar el ancho */
+.bottom-nav-item span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .bottom-nav-item {
+    font-size: 0.68rem;
+  }
 }
 
 .bottom-nav-item[aria-current="page"] {

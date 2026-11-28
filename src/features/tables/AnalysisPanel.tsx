@@ -59,7 +59,7 @@ export function AnalysisPanel({ columns, rows, computed, groupBy, onGroupBy }: P
         <p className="muted small">Aún no hay resultados que analizar con los filtros actuales.</p>
       ) : (
         <>
-          <dl className="stats">
+          <dl className="an-stats">
             {[
               ['Operaciones', String(s.n)],
               ['Acierto', pct(s.winRate)],
@@ -72,7 +72,7 @@ export function AnalysisPanel({ columns, rows, computed, groupBy, onGroupBy }: P
               ['Racha ganadora', String(s.bestStreak)],
               ['Racha perdedora', String(s.worstStreak)],
             ].map(([k, v]) => (
-              <div key={k} className="stat">
+              <div key={k} className="an-stat">
                 <dt>{k}</dt>
                 <dd>{v}</dd>
               </div>

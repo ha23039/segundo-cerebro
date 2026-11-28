@@ -109,10 +109,10 @@
 /* ---- Análisis ---- */
 .analysis { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 4px 16px 16px; }
 .analysis > summary { min-height: var(--tap); display: flex; align-items: center; font-weight: 600; cursor: pointer; }
-.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 8px 0 0; }
-.stat { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
-.stat dt { color: var(--muted); font-size: 0.8rem; }
-.stat dd { margin: 2px 0 0; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.an-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 8px 0 0; }
+.an-stat { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+.an-stat dt { color: var(--muted); font-size: 0.8rem; }
+.an-stat dd { margin: 2px 0 0; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .analysis-title { margin: 16px 0 6px; font-size: 0.95rem; }
 .analysis-group-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .analysis-group-head .analysis-title { margin: 16px 0 6px; }
