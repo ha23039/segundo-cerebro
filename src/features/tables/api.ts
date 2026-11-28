@@ -103,8 +103,8 @@ export async function deleteColumn(id: string): Promise<void> {
   if (error) throw error
 }
 
-export async function createRow(id: string, tableId: string): Promise<void> {
-  const { error } = await supabase.from('journal_rows').insert({ id, table_id: tableId })
+export async function createRow(id: string, tableId: string, cells: Cells = {}): Promise<void> {
+  const { error } = await supabase.from('journal_rows').insert({ id, table_id: tableId, cells: asJson(cells) })
   if (error) throw error
 }
 

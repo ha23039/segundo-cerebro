@@ -95,22 +95,24 @@ export interface Group {
   winRate: number | null
 }
 
-/** Agrupa por el valor de una columna (lista, texto o casilla) y resume el resultado de cada grupo, de mejor a peor. */
+/** Agrupa por el valor de una columna (lista, texto, casilla o fecha por meses) y resume el resultado de cada grupo: de mejor a peor, o por orden de fecha. */
 export function groupResults(groupCol: TableColumn, valueCol: TableColumn, rows: readonly TableRow[], computed: Computed): Group[] {
   const by = new Map<string, number[]>()
   for (const r of rows) {
     const v = numberOf(valueCol, r, computed)
     if (v === null) continue
     const raw = r.cells[groupCol.id]
-    const key = groupCol.type === 'casilla' ? (raw === true ? 'Sí' : 'No') : typeof raw === 'string' && raw ? raw : 'Sin valor'
+    const key = groupCol.type === 'casilla' ? (raw === true ? 'Sí' : 'No') : groupCol.type === 'fecha' ? (typeof raw === 'string' && raw ? raw.slice(0, 7) : 'Sin valor') : typeof raw === 'string' && raw ? raw : 'Sin valor'
     by.set(key, [...(by.get(key) ?? []), v])
   }
-  return [...by.entries()]
+  const groups = [...by.entries()]
     .map(([key, vals]) => {
       const s = computeStats(vals)
       return { key, n: s.n, total: s.total, winRate: s.winRate }
     })
     .sort((a, b) => b.total - a.total || a.key.localeCompare(b.key, 'es'))
+  // Los meses van en orden cronológico (los sin fecha, al final), no por resultado
+  return groupCol.type === 'fecha' ? groups.sort((a, b) => (a.key === 'Sin valor' ? 1 : b.key === 'Sin valor' ? -1 : a.key.localeCompare(b.key))) : groups
 }
 
 // ---- Filtros ----

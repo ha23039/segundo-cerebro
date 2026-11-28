@@ -49,6 +49,15 @@ describe('agrupar y buscar columnas', () => {
   })
 })
 
+describe('agrupar por fecha', () => {
+  it('agrupa por mes, en orden cronológico y con los sin fecha al final', () => {
+    const cols = [col('d', 'Fecha', 'fecha'), col('r', 'Resultado', 'numero')]
+    const rows = [row('1', { d: '2026-11-03', r: 10 }), row('2', { d: '2026-10-28', r: -5 }), row('3', { d: '2026-11-20', r: 5 }), row('4', { r: 1 })]
+    const g = groupResults(cols[0], cols[1], rows, computeFormulas(cols, rows))
+    expect(g.map((x) => [x.key, x.n, x.total])).toEqual([['2026-10', 1, -5], ['2026-11', 2, 15], ['Sin valor', 1, 1]])
+  })
+})
+
 describe('filtros', () => {
   const cols = [col('p', 'Par', 'lista', { choices: ['EUR/USD', 'GBP/JPY'] }), col('r', 'Resultado', 'numero'), col('d', 'Fecha', 'fecha'), col('c', 'Ok', 'casilla'), col('n', 'Notas', 'texto')]
   const rows = [

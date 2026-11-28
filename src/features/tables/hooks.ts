@@ -55,11 +55,8 @@ export function useTableMutations(tableId: string) {
       onError: refetch,
     }),
     addRow: useMutation({
-      // La fila nace vacía y, si trae valores (duplicar, valores por defecto), se rellenan celda a celda con la misma validación del servidor
-      mutationFn: async (row: TableRow) => {
-        await api.createRow(row.id, tableId)
-        for (const [columnId, value] of Object.entries(row.cells)) await api.setCell(row.id, columnId, value)
-      },
+      // La fila nace ya con sus celdas (duplicar, valores por defecto): sin pasos intermedios que un refresco pueda pisar
+      mutationFn: (row: TableRow) => api.createRow(row.id, tableId, row.cells),
       scope: { id: `table-cells-${tableId}` },
       onMutate: (row) => patch((d) => ({ ...d, rows: [...d.rows, row] })),
       onError: refetch,

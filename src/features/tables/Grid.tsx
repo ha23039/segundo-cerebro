@@ -43,6 +43,49 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
   const [editing, setEditing] = useState<{ r: number; c: number; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  // Historial de ediciones de celdas (deshacer y rehacer); cada paso puede agrupar varias celdas (un pegado)
+  type Step = { rowId: string; columnId: string; before: CellValue; after: CellValue }[]
+  const [hist, setHist] = useState<{ undo: Step[]; redo: Step[] }>({ undo: [], redo: [] })
+
+  /** Aplica y registra cambios de celdas. */
+  function edit(changes: { row: TableRow; col: TableColumn; value: CellValue }[]) {
+    const step: Step = []
+    for (const { row, col, value } of changes) {
+      if (sameValue(row.cells[col.id], value)) continue
+      step.push({ rowId: row.id, columnId: col.id, before: row.cells[col.id], after: value })
+      onSet(row.id, col.id, value)
+    }
+    if (step.length > 0) setHist((h) => ({ undo: [...h.undo.slice(-49), step], redo: [] }))
+  }
+
+  function undo() {
+    const step = hist.undo[hist.undo.length - 1]
+    if (!step || disabled) return
+    for (const c of [...step].reverse()) onSet(c.rowId, c.columnId, c.before)
+    setHist((h) => ({ undo: h.undo.slice(0, -1), redo: [...h.redo, step] }))
+  }
+
+  function redo() {
+    const step = hist.redo[hist.redo.length - 1]
+    if (!step || disabled) return
+    for (const c of step) onSet(c.rowId, c.columnId, c.after)
+    setHist((h) => ({ undo: [...h.undo, step], redo: h.redo.slice(0, -1) }))
+  }
+
+  function onGridKey(e: KeyboardEvent<HTMLDivElement>) {
+    const t = e.target as HTMLElement
+    if (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA') return
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return
+    const k = e.key.toLowerCase()
+    if (k === 'z') {
+      e.preventDefault()
+      if (e.shiftKey) redo()
+      else undo()
+    } else if (k === 'y') {
+      e.preventDefault()
+      redo()
+    }
+  }
   const [picker, setPicker] = useState<{ r: number; c: number } | null>(null)
   const cancelled = useRef(false)
   // Lo escrito antes de que el campo de edición esté en pantalla (teclear rápido tras Enter) no se pierde
@@ -85,7 +128,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
       return false
     }
     setError(null)
-    if (!sameValue(row.cells[col.id], res.value)) onSet(row.id, col.id, res.value)
+    edit([{ row, col, value: res.value }])
     editRef.current = null
     setEditing(null)
     if (then === 'down') moveTo(r + 1, c)
@@ -130,7 +173,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
       else startEdit(r, c)
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && !disabled && col.type !== 'formula') {
       e.preventDefault()
-      if (row.cells[col.id] !== undefined) onSet(row.id, col.id, undefined)
+      edit([{ row, col, value: undefined }])
     } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && (col.type === 'texto' || col.type === 'numero')) {
       e.preventDefault()
       startEdit(r, c, e.key)
@@ -152,6 +195,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
     if (!text.trim()) return
     e.preventDefault()
     const block = parseCsv(text, '\t')
+    const changes: { row: TableRow; col: TableColumn; value: CellValue }[] = []
     let pasted = 0
     let invalid = 0
     let outside = 0
@@ -167,10 +211,11 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
         const text = raw.trim()
         const v = text === '' ? undefined : convertCell(col, text)
         if (text !== '' && v === undefined && col.type !== 'casilla') return void invalid++
-        if (!sameValue(row.cells[col.id], v)) onSet(row.id, col.id, v)
+        changes.push({ row, col, value: v })
         pasted++
       })
     })
+    edit(changes)
     setNotice(`Pegadas ${pasted} celdas${invalid ? `; ${invalid} no encajan con su columna` : ''}${outside ? `; ${outside} filas quedaron fuera (añade filas antes de pegar)` : ''}.`)
   }
 
@@ -184,7 +229,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
     if (disabled) return
     const col = columns[c]
     const row = rows[r]
-    onSet(row.id, col.id, row.cells[col.id] === true ? undefined : true)
+    edit([{ row, col, value: row.cells[col.id] === true ? undefined : true }])
   }
 
   if (columns.length === 0) {
@@ -193,7 +238,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
 
   return (
     <>
-      <div ref={wrapRef} className="grid-wrap" role="region" aria-label={`Tabla ${name}`} tabIndex={0} onPaste={onPaste}>
+      <div ref={wrapRef} className="grid-wrap" role="region" aria-label={`Tabla ${name}`} tabIndex={0} onPaste={onPaste} onKeyDown={onGridKey}>
         <table className="grid">
           <thead>
             <tr>
@@ -402,6 +447,16 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
         <p role="alert" className="error">
           {error}
         </p>
+      )}
+      {(hist.undo.length > 0 || hist.redo.length > 0) && (
+        <div className="grid-tools" role="group" aria-label="Historial de cambios">
+          <button type="button" className="btn ghost" disabled={disabled || hist.undo.length === 0} onClick={undo}>
+            Deshacer
+          </button>
+          <button type="button" className="btn ghost" disabled={disabled || hist.redo.length === 0} onClick={redo}>
+            Rehacer
+          </button>
+        </div>
       )}
       {notice && !error && (
         <p role="status" className="muted small">

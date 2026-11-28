@@ -423,3 +423,60 @@ test('color según el signo, columnas ocultas y pegar desde una hoja de cálculo
   await expect(cell(page, 'Importe', 2)).toContainText('30')
   await expect(page.getByRole('status').filter({ hasText: 'Pegadas' })).toContainText('1 no encajan')
 })
+
+test('deshacer y rehacer cambios de celdas, con teclado y con botones', async ({ page }) => {
+  await newTable(page, 'Historial', /Gastos/)
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await write(page, 'Concepto', 'Café')
+  await write(page, 'Importe', '2')
+  await write(page, 'Importe', '3')
+  await expect(cell(page, 'Importe')).toContainText('3')
+
+  await cell(page, 'Importe').focus()
+  await page.keyboard.press('Control+z')
+  await expect(cell(page, 'Importe')).toContainText('2')
+  await page.keyboard.press('Control+Shift+z')
+  await expect(cell(page, 'Importe')).toContainText('3')
+
+  // con los botones (sin teclado, como en el móvil): vuelve hasta vaciar la fila
+  const hist = page.getByRole('group', { name: 'Historial de cambios' })
+  await hist.getByRole('button', { name: 'Deshacer' }).click()
+  await hist.getByRole('button', { name: 'Deshacer' }).click()
+  await hist.getByRole('button', { name: 'Deshacer' }).click()
+  await expect(cell(page, 'Concepto')).not.toContainText('Café')
+  await expect(hist.getByRole('button', { name: 'Deshacer' })).toBeDisabled()
+  await hist.getByRole('button', { name: 'Rehacer' }).click()
+  await expect(cell(page, 'Concepto')).toContainText('Café')
+
+  // un pegado se deshace de una sola vez
+  await cell(page, 'Concepto').focus()
+  await page.evaluate(() => {
+    const dt = new DataTransfer()
+    dt.setData('text/plain', 'Taxi\tOcio\t9')
+    document.activeElement!.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
+  })
+  await expect(cell(page, 'Importe')).toContainText('9')
+  await hist.getByRole('button', { name: 'Deshacer' }).click()
+  await expect(cell(page, 'Concepto')).toContainText('Café')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 1' })).toHaveValue('')
+})
+
+test('análisis por mes y plantillas nuevas', async ({ page }) => {
+  await newTable(page, 'Mensual', /Trading/)
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await expect(cell(page, 'Resultado', 2)).toBeVisible()
+  await page.locator('[data-cell="0-0"]').fill('2026-10-28')
+  await page.locator('[data-cell="1-0"]').fill('2026-11-03')
+  await write(page, 'Resultado', '-5', 1)
+  await write(page, 'Resultado', '15', 2)
+  await page.getByText(/^Análisis de/).click()
+  await page.getByLabel('Agrupar por').selectOption({ label: 'Fecha' })
+  const t = page.getByRole('table', { name: /Resultado por Fecha/ })
+  await expect(t.getByRole('row').nth(1)).toContainText('oct 2026')
+  await expect(t.getByRole('row').nth(2)).toContainText('nov 2026')
+
+  for (const [name, col] of [['Gimnasio', 'Ejercicio'], ['Lecturas', 'Título'], ['Presupuesto mensual', 'Concepto']] as const) {
+    await newTable(page, `Prueba ${name}`, new RegExp(name))
+    await expect(page.getByRole('button', { name: new RegExp(`Editar columna ${col}`) })).toBeVisible()
+  }
+})

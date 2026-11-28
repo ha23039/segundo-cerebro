@@ -152,3 +152,5 @@
 
 .col-picker > summary { min-height: 36px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
 .col-picker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 2px 12px; }
+
+.grid-tools { display: flex; gap: 8px; }

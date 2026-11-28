@@ -14,6 +14,9 @@ interface Props {
 }
 
 const pct = (n: number | null) => (n === null ? '–' : `${Math.round(n * 100)} %`)
+/** `2026-11` pasa a «nov 2026»; el resto de claves se muestra tal cual. */
+const MONTH = new Intl.DateTimeFormat('es-ES', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+const groupLabel = (key: string, type: string) => (type === 'fecha' && /^\d{4}-\d{2}$/.test(key) ? MONTH.format(new Date(`${key}-01T00:00:00Z`)) : key)
 const money = (n: number | null) => (n === null ? '–' : formatNumber(n, 2))
 
 function Equity({ values, label }: { values: number[]; label: string }) {
@@ -47,7 +50,7 @@ export function AnalysisPanel({ columns, rows, computed, groupBy, onGroupBy }: P
   })
   const s = computeStats(values)
   const curve = equityCurve(values)
-  const groupable = columns.filter((c) => c.id !== result.id && (c.type === 'lista' || c.type === 'texto' || c.type === 'casilla'))
+  const groupable = columns.filter((c) => c.id !== result.id && (c.type === 'lista' || c.type === 'texto' || c.type === 'casilla' || c.type === 'fecha'))
   const groupCol = groupable.find((c) => c.id === groupBy)
   const groups = groupCol ? groupResults(groupCol, result, rows, computed) : []
   const maxAbs = Math.max(1, ...groups.map((g) => Math.abs(g.total)))
@@ -104,7 +107,7 @@ export function AnalysisPanel({ columns, rows, computed, groupBy, onGroupBy }: P
                   <caption className="visually-hidden">Resultado por {groupCol.name}</caption>
                   <thead>
                     <tr>
-                      <th scope="col">{groupCol.name}</th>
+                      <th scope="col">{groupCol.type === 'fecha' ? `${groupCol.name} (mes)` : groupCol.name}</th>
                       <th scope="col" className="is-num">Ops.</th>
                       <th scope="col" className="is-num">Acierto</th>
                       <th scope="col">Resultado</th>
@@ -113,7 +116,7 @@ export function AnalysisPanel({ columns, rows, computed, groupBy, onGroupBy }: P
                   <tbody>
                     {groups.map((g) => (
                       <tr key={g.key}>
-                        <th scope="row">{g.key}</th>
+                        <th scope="row">{groupLabel(g.key, groupCol.type)}</th>
                         <td className="is-num">{g.n}</td>
                         <td className="is-num">{pct(g.winRate)}</td>
                         <td className="group-bar-cell">
