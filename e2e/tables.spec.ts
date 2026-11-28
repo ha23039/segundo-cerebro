@@ -27,19 +27,24 @@ test.beforeEach(async ({ page }) => {
 test('journal de trading: escribir celdas, listas, casillas, ítems y fórmula con total; persiste', async ({ page }) => {
   await newTable(page, 'Mi trading', /Trading/)
   await page.getByRole('button', { name: 'Añadir fila' }).click()
-  await expect(cell(page, 'Activo')).toBeVisible()
+  await expect(cell(page, 'Entrada')).toBeVisible()
 
-  await write(page, 'Activo', 'EURUSD')
-  await write(page, 'Entrada', '100')
-  await write(page, 'Salida', '130,5')
-  await write(page, 'Cantidad', '2')
-  await expect(cell(page, 'Resultado')).toContainText('61,00')
-  await expect(page.locator('tfoot')).toContainText('61,00')
+  await write(page, 'Entrada', '1,0850')
+  await write(page, 'Riesgo', '50')
+  await write(page, 'Resultado', '125')
+  await expect(cell(page, 'R')).toContainText('2,50')
+  await expect(page.locator('tfoot')).toContainText('125,00')
 
-  await page.getByRole('combobox', { name: 'Tipo, fila 1' }).selectOption('Venta')
+  await page.getByRole('combobox', { name: 'Dirección, fila 1' }).selectOption('Venta')
   await page.locator('[data-cell="0-0"]').fill('2026-11-26')
-  await page.getByRole('checkbox', { name: 'Cerrada, fila 1' }).click()
-  await expect(page.getByRole('checkbox', { name: 'Cerrada, fila 1' })).toHaveAttribute('aria-checked', 'true')
+  // los 28 pares se eligen con un buscador
+  await cell(page, 'Par').click()
+  const picker = page.getByRole('dialog')
+  await expect(picker.getByRole('button', { name: /\//u })).toHaveCount(28)
+  await picker.getByRole('searchbox', { name: 'Buscar opción' }).fill('gbpjpy')
+  await expect(picker.getByRole('button', { name: /\// })).toHaveCount(1)
+  await picker.getByRole('button', { name: 'GBP/JPY' }).click()
+  await expect(cell(page, 'Par')).toContainText('GBP/JPY')
 
   // lista de ítems dentro de la celda
   await cell(page, 'Revisión').click()
@@ -55,12 +60,11 @@ test('journal de trading: escribir celdas, listas, casillas, ítems y fórmula c
 
   await page.waitForLoadState('networkidle')
   await page.reload()
-  await expect(cell(page, 'Activo')).toContainText('EURUSD')
-  await expect(cell(page, 'Salida')).toContainText('130,5')
-  await expect(cell(page, 'Resultado')).toContainText('61,00')
-  await expect(page.getByRole('combobox', { name: 'Tipo, fila 1' })).toHaveValue('Venta')
+  await expect(cell(page, 'Entrada')).toContainText('1,085')
+  await expect(cell(page, 'R')).toContainText('2,50')
+  await expect(page.getByRole('combobox', { name: 'Dirección, fila 1' })).toHaveValue('Venta')
+  await expect(cell(page, 'Par')).toContainText('GBP/JPY')
   await expect(page.locator('[data-cell="0-0"]')).toHaveValue('2026-11-26')
-  await expect(page.getByRole('checkbox', { name: 'Cerrada, fila 1' })).toHaveAttribute('aria-checked', 'true')
   await expect(cell(page, 'Revisión')).toContainText('1/2')
 })
 
@@ -179,7 +183,7 @@ test('borrar una tabla la manda a la papelera y se puede restaurar', async ({ pa
 test('accesibilidad y 320 px', async ({ page }) => {
   await newTable(page, 'Accesible', /Trading/)
   await page.getByRole('button', { name: 'Añadir fila' }).click()
-  await write(page, 'Activo', 'EURUSD')
+  await write(page, 'Notas', 'Entrada limpia')
   await expectNoA11yViolations(page)
 
   await cell(page, 'Revisión').click()
@@ -190,4 +194,24 @@ test('accesibilidad y 320 px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 })
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
   expect(overflow).toBe(false)
+})
+
+test('una columna de texto se convierte en lista y conserva lo escrito', async ({ page }) => {
+  await newTable(page, 'Convertir')
+  await page.getByRole('button', { name: 'Nueva columna' }).click()
+  await page.getByLabel('Nombre', { exact: true }).fill('Par')
+  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByRole('button', { name: /Editar columna Par/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await write(page, 'Par', 'EUR/USD')
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await write(page, 'Par', 'GBP/JPY', 2)
+
+  await page.getByRole('button', { name: /Editar columna Par/ }).click()
+  await page.getByLabel('Tipo').selectOption('lista')
+  // las opciones se proponen a partir de lo ya escrito
+  await expect(page.getByLabel(/Opciones/)).toHaveValue('EUR/USD\nGBP/JPY')
+  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByRole('combobox', { name: 'Par, fila 1' })).toHaveValue('EUR/USD')
+  await expect(page.getByRole('combobox', { name: 'Par, fila 2' })).toHaveValue('GBP/JPY')
 })

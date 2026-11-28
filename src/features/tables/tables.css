@@ -77,3 +77,16 @@
 .cell-tag .cell-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .cell-tag .cell-select:disabled { opacity: 0.6; cursor: default; }
 .grid td:has(.cell-tag) { min-width: 150px; }
+
+.cell-pick { text-align: left; font: inherit; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ---- Selector con búsqueda ---- */
+.choice-dialog { width: min(92vw, 420px); max-height: 88vh; display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); }
+.choice-dialog[open] { display: flex; }
+.choice-dialog::backdrop { background: color-mix(in srgb, var(--text) 45%, transparent); }
+.choice-dialog h2 { margin: 0; font-size: 1.1rem; overflow-wrap: anywhere; }
+.choice-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; overflow: auto; min-height: 0; scrollbar-width: none; }
+.choice-list::-webkit-scrollbar { display: none; }
+.choice-option { width: 100%; min-height: var(--tap); padding: 6px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
+.choice-option.is-picked { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--surface)); }
+.choice-option:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

@@ -5,7 +5,7 @@ import { useOnline } from '../layout/useOnline'
 import { ColumnDialog } from './ColumnDialog'
 import { compareCells } from './domain/cells'
 import { computeFormulas } from './domain/formula'
-import type { TableRow } from './domain/types'
+import { LIMITS, type TableRow } from './domain/types'
 import { Grid } from './Grid'
 import { useTable, useTableMutations, useTablesMutations } from './hooks'
 import { ItemsDialog } from './ItemsDialog'
@@ -42,6 +42,10 @@ function TableView({ id }: { id: string }) {
 
   const editCol = editingColumn && editingColumn !== 'new' ? columns.find((c) => c.id === editingColumn) : undefined
   const editIndex = editCol ? columns.findIndex((c) => c.id === editCol.id) : -1
+  const suggestions =
+    editCol?.type === 'texto'
+      ? [...new Set(rows.map((r) => r.cells[editCol.id]).filter((v): v is string => typeof v === 'string' && v.length > 0 && v.length <= LIMITS.choiceText))].slice(0, LIMITS.choices)
+      : undefined
   const itemsCol = items ? columns.find((c) => c.id === items.columnId) : undefined
   const itemsRow = items ? rows.find((r) => r.id === items.rowId) : undefined
   const itemsValue = itemsRow && itemsCol ? itemsRow.cells[itemsCol.id] : undefined
@@ -144,12 +148,13 @@ function TableView({ id }: { id: string }) {
           columns={columns}
           busy={m.addColumn.isPending || m.updateColumn.isPending || m.deleteColumn.isPending || m.moveColumn.isPending}
           error={m.addColumn.error ?? m.updateColumn.error ?? m.deleteColumn.error ?? m.moveColumn.error}
+          suggestions={suggestions}
           canMoveLeft={editIndex > 0}
           canMoveRight={editIndex >= 0 && editIndex < columns.length - 1}
           onClose={() => setEditingColumn(null)}
           onSave={(v) =>
             editCol
-              ? m.updateColumn.mutate({ column: editCol, name: v.name, options: v.options, all: columns }, { onSuccess: () => setEditingColumn(null) })
+              ? m.updateColumn.mutate({ column: editCol, name: v.name, type: v.type !== editCol.type ? v.type : undefined, options: v.options, all: columns }, { onSuccess: () => setEditingColumn(null) })
               : m.addColumn.mutate(
                   { id: crypto.randomUUID(), name: v.name, type: v.type, options: v.options, position: Math.max(0, ...columns.map((c) => c.position)) + 1 },
                   { onSuccess: () => setEditingColumn(null) },

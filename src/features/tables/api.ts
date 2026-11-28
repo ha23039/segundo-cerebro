@@ -93,7 +93,7 @@ export async function createColumn(tableId: string, c: NewColumn): Promise<void>
   if (error) throw error
 }
 
-export async function updateColumn(id: string, patch: { name?: string; options?: ColumnOptions; position?: number }): Promise<void> {
+export async function updateColumn(id: string, patch: { name?: string; type?: ColumnType; options?: ColumnOptions; position?: number }): Promise<void> {
   const { error } = await supabase.from('journal_columns').update({ ...patch, options: patch.options === undefined ? undefined : asJson(patch.options) }).eq('id', id)
   if (error) throw error
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from './api'
 import { renameInFormula } from './domain/formula'
-import type { CellValue, ColumnOptions, TableColumn, TableRow } from './domain/types'
+import type { CellValue, ColumnOptions, ColumnType, TableColumn, TableRow } from './domain/types'
 
 export function useTables() {
   return useQuery({ queryKey: ['tables', 'list'], queryFn: api.fetchTables })
@@ -68,8 +68,8 @@ export function useTableMutations(tableId: string) {
     }),
     addColumn: useMutation({ mutationFn: (c: api.NewColumn) => api.createColumn(tableId, c), onSuccess: refetch }),
     updateColumn: useMutation({
-      mutationFn: async ({ column, name, options, all }: { column: TableColumn; name: string; options: ColumnOptions; all: readonly TableColumn[] }) => {
-        await api.updateColumn(column.id, { name, options })
+      mutationFn: async ({ column, name, type, options, all }: { column: TableColumn; name: string; type?: ColumnType; options: ColumnOptions; all: readonly TableColumn[] }) => {
+        await api.updateColumn(column.id, { name, type, options })
         // Si cambió el nombre, las fórmulas que lo citan se actualizan para no romperse
         if (name.trim().toLowerCase() !== column.name.trim().toLowerCase()) {
           for (const c of all) {

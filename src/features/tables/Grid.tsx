@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { displayCell, formatResult, sanitizeCell } from './domain/cells'
+import { ChoiceDialog } from './ChoiceDialog'
 import { footerValue, type Computed } from './domain/formula'
 import type { CellValue, TableColumn, TableRow } from './domain/types'
 
@@ -23,6 +24,10 @@ function draftOf(col: TableColumn, v: CellValue): string {
   return typeof v === 'string' ? v : ''
 }
 
+/** Las listas largas se eligen con un buscador; las cortas, con el selector del sistema. */
+const BIG_LIST = 8
+const isBigList = (col: TableColumn) => col.type === 'lista' && (col.options.choices?.length ?? 0) > BIG_LIST
+
 const typeHint = (col: TableColumn) => ({ texto: 'texto', numero: 'número', fecha: 'fecha', lista: 'lista', casilla: 'casilla', items: 'ítems', formula: 'fórmula' })[col.type]
 
 /**
@@ -36,6 +41,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
   const [editing, setEditing] = useState<{ r: number; c: number; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
+  const [picker, setPicker] = useState<{ r: number; c: number } | null>(null)
   const cancelled = useRef(false)
   // Lo escrito antes de que el campo de edición esté en pantalla (teclear rápido tras Enter) no se pierde
   const editRef = useRef<{ r: number; c: number; draft: string } | null>(null)
@@ -118,6 +124,7 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
       e.preventDefault()
       if (col.type === 'items') onOpenItems(row.id, col.id)
       else if (col.type === 'casilla') toggle(r, c)
+      else if (isBigList(col)) openPicker(r, c)
       else startEdit(r, c)
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && !disabled && col.type !== 'formula') {
       e.preventDefault()
@@ -126,6 +133,12 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
       e.preventDefault()
       startEdit(r, c, e.key)
     }
+  }
+
+  function openPicker(r: number, c: number) {
+    if (disabled) return
+    setActive({ r, c })
+    setPicker({ r, c })
   }
 
   function toggle(r: number, c: number) {
@@ -214,6 +227,27 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
                           else commit(r, c, e.currentTarget.value)
                         }}
                       />
+                    )
+                  } else if (isBigList(col)) {
+                    const picked = typeof value === 'string' ? value : ''
+                    const tone = picked ? (col.options.choices ?? []).indexOf(picked) : -1
+                    body = (
+                      <span className={`cell-tag${picked ? '' : ' is-empty'}`} data-tone={tone >= 0 ? tone % 7 : 'x'}>
+                        <button
+                          type="button"
+                          className="cell-select cell-pick"
+                          data-cell={`${r}-${c}`}
+                          tabIndex={tab}
+                          aria-haspopup="dialog"
+                          aria-label={label}
+                          disabled={disabled}
+                          onFocus={() => setActive({ r, c })}
+                          onKeyDown={(e) => onCellKey(e, r, c)}
+                          onClick={() => openPicker(r, c)}
+                        >
+                          {picked}
+                        </button>
+                      </span>
                     )
                   } else if (col.type === 'lista') {
                     const choices = col.options.choices ?? []
@@ -340,6 +374,22 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
         <p role="alert" className="error">
           {error}
         </p>
+      )}
+      {picker && columns[picker.c] && rows[picker.r] && (
+        <ChoiceDialog
+          title={`${columns[picker.c].name}, fila ${picker.r + 1}`}
+          choices={columns[picker.c].options.choices ?? []}
+          value={typeof rows[picker.r].cells[columns[picker.c].id] === 'string' ? (rows[picker.r].cells[columns[picker.c].id] as string) : ''}
+          onPick={(v) => {
+            const { r, c } = picker
+            setPicker(null)
+            commit(r, c, v)
+          }}
+          onClose={() => {
+            setPicker(null)
+            focusCell(picker.r, picker.c)
+          }}
+        />
       )}
     </>
   )

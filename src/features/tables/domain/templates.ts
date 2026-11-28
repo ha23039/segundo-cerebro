@@ -1,3 +1,4 @@
+import { FOREX_PAIRS } from './forex'
 import type { ColumnOptions, ColumnType } from './types'
 
 export interface TemplateColumn {
@@ -18,19 +19,23 @@ export const TABLE_TEMPLATES: readonly TableTemplate[] = [
   { id: 'vacia', name: 'En blanco', description: 'Empiezas sin columnas y las creas tú.', columns: [] },
   {
     id: 'trading',
-    name: 'Trading',
-    description: 'Operaciones con entrada, salida y resultado calculado.',
+    name: 'Trading (forex)',
+    description: 'Los 28 pares, riesgo, resultado, múltiplo R y si seguiste el plan.',
     columns: [
       { name: 'Fecha', type: 'fecha' },
-      { name: 'Activo', type: 'texto' },
-      { name: 'Tipo', type: 'lista', options: { choices: ['Compra', 'Venta'] } },
+      { name: 'Par', type: 'lista', options: { choices: [...FOREX_PAIRS] } },
+      { name: 'Dirección', type: 'lista', options: { choices: ['Compra', 'Venta'] } },
+      { name: 'Setup', type: 'lista', options: { choices: ['Ruptura', 'Rechazo en S/R', 'Tendencia', 'Reversión', 'Otro'] } },
       { name: 'Entrada', type: 'numero' },
-      { name: 'Salida', type: 'numero' },
-      { name: 'Cantidad', type: 'numero' },
-      { name: 'Resultado', type: 'formula', options: { formula: '({Salida} - {Entrada}) * {Cantidad}', decimals: 2, footer: 'suma' } },
-      { name: 'Cerrada', type: 'casilla' },
+      { name: 'Stop Loss', type: 'numero' },
+      { name: 'Take Profit', type: 'numero' },
+      { name: 'Riesgo', type: 'numero', options: { decimals: 2, footer: 'suma' } },
+      { name: 'Resultado', type: 'numero', options: { decimals: 2, footer: 'suma' } },
+      { name: 'R', type: 'formula', options: { formula: '{Resultado} / {Riesgo}', decimals: 2, footer: 'media' } },
+      { name: 'Siguió el plan', type: 'lista', options: { choices: ['Sí', 'No'] } },
+      { name: 'Error o emoción', type: 'lista', options: { choices: ['Ninguno', 'Revenge trading', 'Miedo', 'Exceso de confianza', 'Entrada tardía', 'Salida anticipada'] } },
       { name: 'Revisión', type: 'items' },
-      { name: 'Motivo', type: 'texto' },
+      { name: 'Notas', type: 'texto' },
     ],
   },
   {

@@ -11,6 +11,8 @@ interface Props {
   error: unknown
   canMoveLeft: boolean
   canMoveRight: boolean
+  /** Valores distintos ya escritos en una columna de texto: se ofrecen como opciones al convertirla en lista. */
+  suggestions?: string[]
   onSave(v: { name: string; type: ColumnType; options: ColumnOptions }): void
   onDelete?(): void
   onMove?(dir: -1 | 1): void
@@ -29,7 +31,7 @@ function initial(c: TableColumn | undefined): ColumnFormInput {
 }
 
 /** Crear o editar una columna: nombre, tipo, opciones, fórmula y resumen al pie. */
-export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMoveRight, onSave, onDelete, onMove, onClose }: Props) {
+export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMoveRight, suggestions, onSave, onDelete, onMove, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const [form, setForm] = useState<ColumnFormInput>(() => initial(column))
   const [errors, setErrors] = useState<ColumnFormErrors>({})
@@ -41,6 +43,7 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
   }, [])
 
   const set = (patch: Partial<ColumnFormInput>) => setForm((f) => ({ ...f, ...patch }))
+  const convertible = column?.type === 'texto'
   const numeric = form.type === 'numero' || form.type === 'formula'
   const refsPool = columns.filter((c) => c.id !== column?.id && (c.type === 'numero' || c.type === 'formula'))
 
@@ -69,14 +72,23 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
 
         <div>
           <label htmlFor="col-type">Tipo</label>
-          <select id="col-type" value={form.type} disabled={!!column} onChange={(e) => set({ type: e.target.value as ColumnType })}>
-            {COLUMN_TYPES.map((t) => (
+          <select
+            id="col-type"
+            value={form.type}
+            disabled={!!column && !convertible}
+            onChange={(e) => {
+              const type = e.target.value as ColumnType
+              set({ type, ...(type === 'lista' && !form.choices.trim() && suggestions?.length ? { choices: suggestions.join('\n') } : {}) })
+            }}
+          >
+            {COLUMN_TYPES.filter((t) => !convertible || t.id === 'texto' || t.id === 'lista').map((t) => (
               <option key={t.id} value={t.id}>
                 {t.label}
               </option>
             ))}
           </select>
-          {column && <p className="muted small hint">El tipo no se puede cambiar después de crear la columna.</p>}
+          {column && !convertible && <p className="muted small hint">El tipo no se puede cambiar después de crear la columna.</p>}
+          {convertible && <p className="muted small hint">Una columna de texto se puede convertir en lista; lo ya escrito se conserva.</p>}
         </div>
 
         {form.type === 'lista' && (
