@@ -1,12 +1,13 @@
-.tables-view, .table-page { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.table-page h1, .table-page p { margin: 0; }
+.tables-view, .table-page, .tables-page { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.table-page h1, .table-page p, .tables-page h1, .tables-page > p { margin: 0; }
 .tables-new { display: flex; flex-direction: column; gap: 14px; }
 .tables-template { align-items: flex-start; }
 .tables-template-desc { display: block; }
 
 .table-page .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
-.table-toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
-.table-actions { display: inline-flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.table-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.table-toolbar .more-menu { margin-left: auto; }
+.filter-panel { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .table-sort { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .table-sort label { margin: 0; }
 .table-sort select { width: auto; min-width: 0; max-width: 100%; }
@@ -90,3 +91,52 @@
 .choice-option { width: 100%; min-height: var(--tap); padding: 6px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
 .choice-option.is-picked { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--surface)); }
 .choice-option:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ---- Filtros ---- */
+.table-filters { display: flex; flex-direction: column; gap: 8px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.filter-form, .filter-save { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-form select, .filter-form input, .filter-save input { width: auto; min-width: 0; max-width: 100%; }
+.chip-toggle { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; font-size: 0.9rem; cursor: pointer; }
+.chip-toggle[aria-pressed="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
+.chip-toggle:focus-visible, .icon-plain:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.filter-chips { display: contents; list-style: none; margin: 0; padding: 0; }
+.filter-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); font-size: 0.9rem; }
+.icon-plain { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.icon-plain:hover { color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); }
+.saved-view { display: inline-flex; align-items: center; }
+
+/* ---- Análisis ---- */
+.analysis { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 4px 16px 16px; }
+.analysis > summary { min-height: var(--tap); display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 8px 0 0; }
+.stat { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+.stat dt { color: var(--muted); font-size: 0.8rem; }
+.stat dd { margin: 2px 0 0; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.analysis-title { margin: 16px 0 6px; font-size: 0.95rem; }
+.analysis-group-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.analysis-group-head .analysis-title { margin: 16px 0 6px; }
+.analysis-group-head select { width: auto; margin-top: 10px; }
+.equity { display: block; width: 100%; height: 160px; }
+.equity-zero { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
+.equity-line { stroke: var(--ok); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.equity-line.is-neg { stroke: var(--danger); }
+.group-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.group-table th, .group-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 500; }
+.group-table thead th { color: var(--muted); font-size: 0.8rem; }
+.group-table .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.group-bar-cell { position: relative; min-width: 96px; }
+.group-scroll { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.group-scroll::-webkit-scrollbar { display: none; }
+.group-bar { position: absolute; left: 0; top: 50%; height: 14px; margin-top: -7px; border-radius: 0 4px 4px 0; background: color-mix(in srgb, var(--ok) 45%, transparent); }
+.group-bar.is-neg { background: color-mix(in srgb, var(--danger) 45%, transparent); }
+.group-val { position: relative; display: block; padding-right: 4px; }
+
+/* ---- Menú de tres puntos ---- */
+.more-menu { position: relative; }
+.more-trigger { width: var(--tap); padding: 0; justify-content: center; }
+.more-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 200px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 18%, transparent); }
+.more-item { min-height: var(--tap); padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.more-item:hover:not(:disabled), .more-item:focus-visible { background: color-mix(in srgb, var(--primary) 12%, transparent); outline: none; }
+.more-item.is-danger { color: var(--danger); }
+.more-item:disabled { color: var(--muted); cursor: default; }

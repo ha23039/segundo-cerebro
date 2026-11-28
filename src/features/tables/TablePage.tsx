@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import { todayIn } from '../../lib/dates'
 import { toMessage } from '../../lib/errors'
+import { useProfile } from '../profile/useProfile'
+import { AnalysisPanel } from './AnalysisPanel'
+import { MoreMenu } from './MoreMenu'
+import { TableFilters } from './TableFilters'
+import { useTableView } from './useTableView'
+import { applyFilters } from './domain/analysis'
 import { useOnline } from '../layout/useOnline'
 import { ColumnDialog } from './ColumnDialog'
 import { compareCells } from './domain/cells'
@@ -17,24 +24,29 @@ function TableView({ id }: { id: string }) {
   const query = useTable(id)
   const m = useTableMutations(id)
   const { trash } = useTablesMutations()
+  const profile = useProfile()
+  const view = useTableView(id)
   const [sortBy, setSortBy] = useState('')
   const [desc, setDesc] = useState(false)
   const [editingColumn, setEditingColumn] = useState<string | 'new' | null>(null)
   const [items, setItems] = useState<{ rowId: string; columnId: string } | null>(null)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [confirmTrash, setConfirmTrash] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
 
   const data = query.data
   const columns = useMemo(() => data?.columns ?? [], [data])
   const rows = useMemo(() => data?.rows ?? [], [data])
   const computed = useMemo(() => computeFormulas(columns, rows), [columns, rows])
 
+  const filtered = useMemo(() => applyFilters(view.rules, columns, rows, computed), [view.rules, columns, rows, computed])
+
   const sorted = useMemo(() => {
     const col = columns.find((c) => c.id === sortBy)
-    if (!col) return rows
-    const out = [...rows].sort((a, b) => compareCells(col, a.cells[col.id], b.cells[col.id], computed.get(a.id)?.[col.id], computed.get(b.id)?.[col.id]))
+    if (!col) return filtered
+    const out = [...filtered].sort((a, b) => compareCells(col, a.cells[col.id], b.cells[col.id], computed.get(a.id)?.[col.id], computed.get(b.id)?.[col.id]))
     return desc ? out.reverse() : out
-  }, [rows, columns, computed, sortBy, desc])
+  }, [filtered, columns, computed, sortBy, desc])
 
   if (query.isPending) return <p className="muted">Cargando…</p>
   if (query.isError) return <p role="alert" className="error">{toMessage(query.error)}</p>
@@ -59,17 +71,12 @@ function TableView({ id }: { id: string }) {
   return (
     <div className="table-page">
       <p>
-        <Link to="/diario?vista=tablas">Volver a las tablas</Link>
+        <Link to="/tablas">Volver a las tablas</Link>
       </p>
 
       <div className="page-header">
         {renaming === null ? (
-          <>
-            <h1>{data.table.name}</h1>
-            <button className="btn ghost" type="button" disabled={!online} onClick={() => setRenaming(data.table.name)}>
-              Renombrar
-            </button>
-          </>
+          <h1>{data.table.name}</h1>
         ) : (
           <form
             className="row"
@@ -93,33 +100,66 @@ function TableView({ id }: { id: string }) {
       </div>
 
       <div className="table-toolbar">
+        <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={addRow}>
+          Añadir fila
+        </button>
         {columns.length > 0 && (
-          <span className="table-sort">
-            <label htmlFor="sort-col">Ordenar por</label>
-            <select id="sort-col" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="">Orden de entrada</option>
-              {columns.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            {sortBy && (
-              <button className="btn" type="button" aria-pressed={desc} onClick={() => setDesc((d) => !d)}>
-                {desc ? 'De mayor a menor' : 'De menor a mayor'}
-              </button>
-            )}
-          </span>
+          <button className="btn" type="button" aria-expanded={showFilters} aria-controls="table-filters-panel" onClick={() => setShowFilters((v) => !v)}>
+            Filtros{view.rules.length > 0 ? ` (${view.rules.length})` : ''}
+          </button>
         )}
-        <span className="table-actions">
-          <button className="btn" type="button" disabled={!online} onClick={() => setEditingColumn('new')}>
-            Nueva columna
-          </button>
-          <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={addRow}>
-            Añadir fila
-          </button>
-        </span>
+        <MoreMenu
+          actions={[
+            { label: 'Nueva columna', disabled: !online, onSelect: () => setEditingColumn('new') },
+            { label: 'Renombrar tabla', disabled: !online, onSelect: () => setRenaming(data.table.name) },
+            { label: 'Borrar tabla', disabled: !online, danger: true, onSelect: () => setConfirmTrash(true) },
+          ]}
+        />
       </div>
+
+      {confirmTrash && (
+        <div className="row table-danger" role="group" aria-label="Borrar tabla">
+          <p className="error small">La tabla va a la papelera 30 días y se puede restaurar.</p>
+          <button className="btn btn-danger" type="button" disabled={trash.isPending} onClick={() => trash.mutate(id, { onSuccess: () => navigate('/tablas') })}>
+            Sí, borrar la tabla
+          </button>
+          <button className="btn" type="button" onClick={() => setConfirmTrash(false)}>
+            No
+          </button>
+        </div>
+      )}
+
+      <TableFilters
+        columns={columns}
+        rules={view.rules}
+        saved={view.saved}
+        month={todayIn(profile.data?.timezone ?? 'Europe/Madrid').slice(0, 7)}
+        shown={filtered.length}
+        total={rows.length}
+        open={showFilters}
+        onChange={view.setRules}
+        onSaveView={view.saveView}
+        onDeleteView={view.deleteView}
+      >
+        <span className="table-sort">
+          <label htmlFor="sort-col">Ordenar por</label>
+          <select id="sort-col" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="">Orden de entrada</option>
+            {columns.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {sortBy && (
+            <button className="btn" type="button" aria-pressed={desc} onClick={() => setDesc((d) => !d)}>
+              {desc ? 'De mayor a menor' : 'De menor a mayor'}
+            </button>
+          )}
+        </span>
+      </TableFilters>
+
+      <AnalysisPanel columns={columns} rows={filtered} computed={computed} groupBy={view.groupBy} onGroupBy={view.setGroupBy} />
 
       {!online && <p className="muted small">Sin conexión: las tablas se pueden ver, pero no editar.</p>}
       {mutationError != null && (
@@ -182,23 +222,6 @@ function TableView({ id }: { id: string }) {
         />
       )}
 
-      <section className="table-danger" aria-label="Borrar tabla">
-        {confirmTrash ? (
-          <div className="row">
-            <p className="error small">La tabla va a la papelera 30 días y se puede restaurar.</p>
-            <button className="btn btn-danger" type="button" disabled={trash.isPending} onClick={() => trash.mutate(id, { onSuccess: () => navigate('/diario?vista=tablas') })}>
-              Sí, borrar la tabla
-            </button>
-            <button className="btn" type="button" onClick={() => setConfirmTrash(false)}>
-              No
-            </button>
-          </div>
-        ) : (
-          <button className="btn btn-danger" type="button" disabled={!online} onClick={() => setConfirmTrash(true)}>
-            Borrar tabla
-          </button>
-        )}
-      </section>
     </div>
   )
 }

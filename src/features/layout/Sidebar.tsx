@@ -1,10 +1,14 @@
 import { NavLink } from 'react-router'
+import { useTables } from '../tables/hooks'
 import { NavIcon } from './NavIcon'
 import { NAV_ITEMS } from './navItems'
 import { ThemeToggle } from './ThemeToggle'
 
 /** Barra lateral: solo en pantallas anchas. */
+const MAX_SHORTCUTS = 8
+
 export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+  const tables = useTables()
   return (
     <nav className="sidebar" aria-label="Principal">
       <div className="brand">
@@ -38,6 +42,19 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           </NavLink>
         ))}
       </div>
+      {tables.data && tables.data.length > 0 && (
+        <>
+          <p className="eyebrow sidebar-label sidebar-text">Mis tablas</p>
+          <div className="sidebar-links sidebar-tables">
+            {tables.data.slice(0, MAX_SHORTCUTS).map((t) => (
+              <NavLink key={t.id} to={`/tablas/${t.id}`} className="sidebar-link sidebar-table" title={t.name}>
+                <NavIcon d="M4 5h16v14H4zM4 11h16M10 5v14" />
+                <span className="sidebar-text">{t.name}</span>
+              </NavLink>
+            ))}
+          </div>
+        </>
+      )}
       <div className="sidebar-foot">
         <ThemeToggle withLabel />
       </div>

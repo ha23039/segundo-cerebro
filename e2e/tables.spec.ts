@@ -2,13 +2,18 @@ import { expect, test, type Page } from '@playwright/test'
 import { createTestUser, expectNoA11yViolations, login } from './helpers'
 
 async function newTable(page: Page, name: string, template: RegExp | null = null) {
-  await page.goto('/diario?vista=tablas')
+  await page.goto('/tablas')
   await page.getByRole('button', { name: 'Nueva tabla' }).click()
   await page.getByLabel('Nombre de la tabla').fill(name)
   if (template) await page.getByRole('radio', { name: template }).check()
   await page.getByRole('button', { name: 'Crear tabla' }).click()
   await expect(page).toHaveURL(/\/tablas\/[0-9a-f-]{36}$/)
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible()
+}
+
+async function menu(page: Page, item: string) {
+  await page.getByRole('button', { name: 'Más opciones' }).click()
+  await page.getByRole('menuitem', { name: item }).click()
 }
 
 const cell = (page: Page, col: string, row = 1) => page.getByRole('button', { name: new RegExp(`^${col}, fila ${row}( \\(se calcula sola\\))?:`) })
@@ -84,6 +89,8 @@ test('con teclado: flechas, escribir para reemplazar, Escape cancela y Supr vac�
   await expect(editor(page, 'Concepto', 1)).toHaveValue('Té')
   await page.keyboard.press('Escape')
   await expect(cell(page, 'Concepto', 1)).toContainText('Café')
+  // el foco vuelve a la celda en el cuadro siguiente: sin esperarlo, Enter caería en el vacío
+  await expect(cell(page, 'Concepto', 1)).toBeFocused()
 
   await page.keyboard.press('Enter')
   await page.keyboard.type(' con leche')
@@ -107,14 +114,14 @@ test('un número no válido avisa y no se guarda', async ({ page }) => {
 
 test('columnas: crear una de fórmula, validar, renombrar sin romper fórmulas y borrar', async ({ page }) => {
   await newTable(page, 'Columnas')
-  await page.getByRole('button', { name: 'Nueva columna' }).click()
+  await menu(page, 'Nueva columna')
   let dialog = page.getByRole('dialog')
   await dialog.getByLabel('Nombre').fill('Entrada')
   await dialog.getByLabel('Tipo').selectOption('numero')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByRole('button', { name: /Editar columna Entrada/ })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Nueva columna' }).click()
+  await menu(page, 'Nueva columna')
   dialog = page.getByRole('dialog')
   await dialog.getByLabel('Nombre').fill('Doble')
   await dialog.getByLabel('Tipo').selectOption('formula')
@@ -137,7 +144,7 @@ test('columnas: crear una de fórmula, validar, renombrar sin romper fórmulas y
   await expect(cell(page, 'Doble')).toContainText('42')
 
   // un nombre repetido se rechaza
-  await page.getByRole('button', { name: 'Nueva columna' }).click()
+  await menu(page, 'Nueva columna')
   await page.getByRole('dialog').getByLabel('Nombre').fill('precio')
   await page.getByRole('dialog').getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('Ya hay una columna')
@@ -159,6 +166,7 @@ test('ordenar por una columna y borrar una fila', async ({ page }) => {
   await write(page, 'Importe', '20', 2)
   await write(page, 'Importe', '1', 3)
 
+  await page.getByRole('button', { name: /^Filtros/ }).click()
   await page.getByLabel('Ordenar por').selectOption({ label: 'Importe' })
   await expect(cell(page, 'Importe', 1)).toContainText('1')
   await expect(cell(page, 'Importe', 3)).toContainText('20')
@@ -172,9 +180,9 @@ test('ordenar por una columna y borrar una fila', async ({ page }) => {
 
 test('borrar una tabla la manda a la papelera y se puede restaurar', async ({ page }) => {
   await newTable(page, 'Temporal')
-  await page.getByRole('button', { name: 'Borrar tabla' }).click()
+  await menu(page, 'Borrar tabla')
   await page.getByRole('button', { name: 'Sí, borrar la tabla' }).click()
-  await expect(page).toHaveURL(/vista=tablas/)
+  await expect(page).toHaveURL(/\/tablas$/)
   await expect(page.getByRole('heading', { name: 'Tablas borradas' })).toBeVisible()
   await page.getByRole('button', { name: /Restaurar/ }).click()
   await expect(page.getByRole('link', { name: 'Temporal' })).toBeVisible()
@@ -185,6 +193,13 @@ test('accesibilidad y 320 px', async ({ page }) => {
   await page.getByRole('button', { name: 'Añadir fila' }).click()
   await write(page, 'Notas', 'Entrada limpia')
   await expectNoA11yViolations(page)
+
+  await page.getByRole('button', { name: 'Más opciones' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Nueva columna' })).toBeFocused()
+  await expectNoA11yViolations(page)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menu')).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Más opciones' })).toBeFocused()
 
   await cell(page, 'Revisión').click()
   await expect(page.getByRole('dialog')).toBeVisible()
@@ -198,7 +213,7 @@ test('accesibilidad y 320 px', async ({ page }) => {
 
 test('una columna de texto se convierte en lista y conserva lo escrito', async ({ page }) => {
   await newTable(page, 'Convertir')
-  await page.getByRole('button', { name: 'Nueva columna' }).click()
+  await menu(page, 'Nueva columna')
   await page.getByLabel('Nombre', { exact: true }).fill('Par')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByRole('button', { name: /Editar columna Par/ })).toBeVisible()
@@ -214,4 +229,72 @@ test('una columna de texto se convierte en lista y conserva lo escrito', async (
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByRole('combobox', { name: 'Par, fila 1' })).toHaveValue('EUR/USD')
   await expect(page.getByRole('combobox', { name: 'Par, fila 2' })).toHaveValue('GBP/JPY')
+})
+
+test('las tablas tienen su acceso directo en el menú y se crean desde ahí', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Tablas' }).click()
+  await expect(page).toHaveURL(/\/tablas$/)
+  await expect(page.getByRole('heading', { name: 'Tablas', level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: 'Nueva tabla' }).click()
+  await page.getByLabel('Nombre de la tabla').fill('Gastos de casa')
+  await page.getByRole('radio', { name: /Gastos/ }).check()
+  await page.getByRole('button', { name: 'Crear tabla' }).click()
+  await expect(page).toHaveURL(/\/tablas\/[0-9a-f-]{36}$/)
+  await page.getByRole('link', { name: 'Volver a las tablas' }).click()
+  await expect(page).toHaveURL(/\/tablas$/)
+  await expect(page.getByRole('link', { name: 'Gastos de casa' })).toBeVisible()
+})
+
+test('filtros, vistas guardadas y análisis de resultados', async ({ page }) => {
+  await newTable(page, 'Análisis', /Trading/)
+  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await expect(cell(page, 'Resultado', 3)).toBeVisible()
+  await write(page, 'Resultado', '100', 1)
+  await write(page, 'Resultado', '-40', 2)
+  await write(page, 'Resultado', '20', 3)
+
+  await page.getByText(/^Análisis de/).click()
+  const stats = page.locator('.stats')
+  await expect(stats).toContainText('Operaciones3')
+  await expect(stats).toContainText('Acierto67 %')
+  await expect(stats).toContainText('Total80,00')
+  await expect(stats).toContainText('Drawdown máx.40,00')
+  await expect(page.getByRole('img', { name: /Curva de equity/ })).toBeVisible()
+
+  // filtro rápido: solo pérdidas
+  await page.getByRole('button', { name: /^Filtros/ }).click()
+  await page.getByRole('button', { name: 'Solo pérdidas' }).click()
+  await expect(page.getByRole('status')).toContainText('1 de 3 filas')
+  await expect(stats).toContainText('Operaciones1')
+  await expect(stats).toContainText('Total-40,00')
+  // pérdidas y ganancias se excluyen entre sí
+  await page.getByRole('button', { name: 'Solo ganancias' }).click()
+  await expect(page.getByRole('status')).toContainText('2 de 3 filas')
+  await page.getByRole('button', { name: 'Solo pérdidas' }).click()
+  await expect(page.getByRole('status')).toContainText('1 de 3 filas')
+
+  // se guarda como vista y se recupera
+  await page.getByLabel('Nombre de la vista').fill('Pérdidas')
+  await page.getByRole('button', { name: 'Guardar vista' }).click()
+  await page.getByRole('button', { name: 'Quitar todos' }).click()
+  await expect(stats).toContainText('Operaciones3')
+  await page.getByRole('button', { name: 'Pérdidas', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('1 de 3 filas')
+
+  // la vista y los filtros se recuerdan al recargar
+  await page.reload()
+  await expect(page.getByRole('status')).toContainText('1 de 3 filas')
+
+  // agrupar por una columna
+  await page.getByRole('button', { name: 'Quitar todos' }).click()
+  await page.getByText(/^Análisis de/).click()
+  await page.getByLabel('Agrupar por').selectOption({ label: 'Dirección' })
+  await expect(page.getByRole('table', { name: /Resultado por Dirección/ })).toContainText('Sin valor')
+
+  await page.getByRole('button', { name: /^Filtros/ }).click()
+  await page.getByRole('button', { name: 'Filtro propio' }).click()
+  await expectNoA11yViolations(page)
+  await page.setViewportSize({ width: 320, height: 700 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
 })

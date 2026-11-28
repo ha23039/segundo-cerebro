@@ -6,7 +6,7 @@ import { NAV_ITEMS } from './navItems'
 export function BottomNav() {
   return (
     <nav className="bottom-nav" aria-label="Principal">
-      {NAV_ITEMS.map((item) => (
+      {NAV_ITEMS.filter((i) => !i.sidebarOnly).map((item) => (
         <NavLink key={item.to} to={item.to} end={item.to === '/'} className="bottom-nav-item">
           <NavIcon d={item.icon} />
           <span>{item.label}</span>

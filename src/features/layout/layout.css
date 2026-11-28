@@ -251,6 +251,27 @@
   color: var(--primary);
 }
 
+.sidebar-tables {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebar-tables::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar-table {
+  min-height: 40px;
+  font-weight: 500;
+}
+
+.sidebar-table span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .sidebar-foot {
   margin-top: auto;
 }
