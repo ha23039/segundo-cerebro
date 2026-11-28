@@ -216,24 +216,29 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
                       />
                     )
                   } else if (col.type === 'lista') {
+                    const choices = col.options.choices ?? []
+                    const picked = typeof value === 'string' ? value : ''
+                    const tone = picked ? choices.indexOf(picked) : -1
                     body = (
-                      <select
-                        className="cell-select"
-                        data-cell={`${r}-${c}`}
-                        tabIndex={tab}
-                        aria-label={`${col.name}, fila ${r + 1}`}
-                        value={typeof value === 'string' ? value : ''}
-                        disabled={disabled}
-                        onFocus={() => setActive({ r, c })}
-                        onChange={(e) => commit(r, c, e.target.value)}
-                      >
-                        <option value="" />
-                        {[...(col.options.choices ?? []), ...(typeof value === 'string' && value && !(col.options.choices ?? []).includes(value) ? [value] : [])].map((o) => (
-                          <option key={o} value={o}>
-                            {o}
-                          </option>
-                        ))}
-                      </select>
+                      <span className={`cell-tag${picked ? '' : ' is-empty'}`} data-tone={tone >= 0 ? tone % 7 : 'x'}>
+                        <select
+                          className="cell-select"
+                          data-cell={`${r}-${c}`}
+                          tabIndex={tab}
+                          aria-label={`${col.name}, fila ${r + 1}`}
+                          value={picked}
+                          disabled={disabled}
+                          onFocus={() => setActive({ r, c })}
+                          onChange={(e) => commit(r, c, e.target.value)}
+                        >
+                          <option value="" />
+                          {[...choices, ...(picked && tone < 0 ? [picked] : [])].map((o) => (
+                            <option key={o} value={o}>
+                              {o}
+                            </option>
+                          ))}
+                        </select>
+                      </span>
                     )
                   } else if (col.type === 'fecha') {
                     body = (

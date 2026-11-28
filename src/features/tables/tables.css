@@ -4,14 +4,17 @@
 .tables-template { align-items: flex-start; }
 .tables-template-desc { display: block; }
 
-.table-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.table-page .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.table-toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.table-actions { display: inline-flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .table-sort { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .table-sort label { margin: 0; }
 .table-sort select { width: auto; min-width: 0; max-width: 100%; }
 .table-danger { margin-top: 16px; }
 
 /* ---- Hoja ---- */
-.grid-wrap { overflow: auto; max-width: 100%; max-height: 70vh; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.grid-wrap { overflow: auto; max-width: 100%; max-height: calc(100dvh - 250px); scrollbar-width: none; -ms-overflow-style: none; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.grid-wrap::-webkit-scrollbar { display: none; }
 .grid { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 0.95rem; }
 .grid th, .grid td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0; text-align: left; vertical-align: middle; min-width: 120px; background: var(--surface); }
 .grid thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); }
@@ -50,3 +53,27 @@
 .items-add input { flex: 1; min-width: 0; }
 .formula-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .column-extra { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 12px; }
+
+/* ---- Celdas de lista: etiqueta de color (el color sigue a la opción, el texto va en tinta normal) ---- */
+.cell-tag { position: relative; display: flex; align-items: center; min-height: 44px; padding: 6px 8px; --tone: var(--muted); }
+.cell-tag[data-tone="0"] { --tone: var(--area-estudio); }
+.cell-tag[data-tone="1"] { --tone: var(--area-salud); }
+.cell-tag[data-tone="2"] { --tone: var(--area-finanzas); }
+.cell-tag[data-tone="3"] { --tone: var(--area-trabajo); }
+.cell-tag[data-tone="4"] { --tone: var(--area-desarrollo); }
+.cell-tag[data-tone="5"] { --tone: var(--area-ejercicio); }
+.cell-tag[data-tone="6"] { --tone: var(--area-espiritualidad); }
+.cell-tag .cell-select {
+  appearance: none; -webkit-appearance: none; width: 100%; min-height: 30px; padding: 4px 28px 4px 12px; border-radius: 999px; cursor: pointer;
+  background: color-mix(in srgb, var(--tone) 22%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--border));
+  font-size: 0.9rem; font-weight: 500; text-overflow: ellipsis;
+}
+.cell-tag.is-empty .cell-select { background: transparent; border-color: transparent; }
+.cell-tag.is-empty:hover .cell-select, .cell-tag.is-empty:focus-within .cell-select { border-color: var(--border); }
+.cell-tag::after {
+  content: ''; position: absolute; right: 18px; top: 50%; width: 6px; height: 6px; margin-top: -5px; pointer-events: none;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg);
+}
+.cell-tag .cell-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.cell-tag .cell-select:disabled { opacity: 0.6; cursor: default; }
+.grid td:has(.cell-tag) { min-width: 150px; }

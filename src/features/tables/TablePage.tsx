@@ -60,7 +60,12 @@ function TableView({ id }: { id: string }) {
 
       <div className="page-header">
         {renaming === null ? (
-          <h1>{data.table.name}</h1>
+          <>
+            <h1>{data.table.name}</h1>
+            <button className="btn ghost" type="button" disabled={!online} onClick={() => setRenaming(data.table.name)}>
+              Renombrar
+            </button>
+          </>
         ) : (
           <form
             className="row"
@@ -84,12 +89,6 @@ function TableView({ id }: { id: string }) {
       </div>
 
       <div className="table-toolbar">
-        <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={addRow}>
-          Añadir fila
-        </button>
-        <button className="btn" type="button" disabled={!online} onClick={() => setEditingColumn('new')}>
-          Nueva columna
-        </button>
         {columns.length > 0 && (
           <span className="table-sort">
             <label htmlFor="sort-col">Ordenar por</label>
@@ -108,9 +107,14 @@ function TableView({ id }: { id: string }) {
             )}
           </span>
         )}
-        <button className="btn ghost" type="button" disabled={!online} onClick={() => setRenaming(data.table.name)}>
-          Renombrar
-        </button>
+        <span className="table-actions">
+          <button className="btn" type="button" disabled={!online} onClick={() => setEditingColumn('new')}>
+            Nueva columna
+          </button>
+          <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={addRow}>
+            Añadir fila
+          </button>
+        </span>
       </div>
 
       {!online && <p className="muted small">Sin conexión: las tablas se pueden ver, pero no editar.</p>}
