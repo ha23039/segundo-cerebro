@@ -26,7 +26,8 @@ function initial(c: TableColumn | undefined): ColumnFormInput {
     choices: (c?.options.choices ?? []).join('\n'),
     formula: c?.options.formula ?? '',
     decimals: c?.options.decimals === undefined ? '' : String(c.options.decimals),
-    footer: c?.options.footer ?? (c?.type === 'numero' || c?.type === 'formula' ? 'ninguno' : 'ninguno'),
+    footer: c?.options.footer ?? 'ninguno',
+    defaultValue: c?.options.default ?? '',
   }
 }
 
@@ -78,7 +79,7 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
             disabled={!!column && !convertible}
             onChange={(e) => {
               const type = e.target.value as ColumnType
-              set({ type, ...(type === 'lista' && !form.choices.trim() && suggestions?.length ? { choices: suggestions.join('\n') } : {}) })
+              set({ type, defaultValue: '', ...(type === 'lista' && !form.choices.trim() && suggestions?.length ? { choices: suggestions.join('\n') } : {}) })
             }}
           >
             {COLUMN_TYPES.filter((t) => !convertible || t.id === 'texto' || t.id === 'lista').map((t) => (
@@ -131,6 +132,43 @@ export function ColumnDialog({ column, columns, busy, error, canMoveLeft, canMov
             {errors.formula && (
               <p role="alert" className="error field-error">
                 {errors.formula}
+              </p>
+            )}
+          </div>
+        )}
+
+        {form.type !== 'formula' && form.type !== 'items' && (
+          <div>
+            {form.type === 'fecha' || form.type === 'casilla' ? (
+              <label className="choice">
+                <input type="checkbox" checked={form.defaultValue === (form.type === 'fecha' ? 'hoy' : 'si')} onChange={(e) => set({ defaultValue: e.target.checked ? (form.type === 'fecha' ? 'hoy' : 'si') : '' })} />
+                <span>{form.type === 'fecha' ? 'Poner la fecha de hoy en las filas nuevas' : 'Marcada en las filas nuevas'}</span>
+              </label>
+            ) : form.type === 'lista' ? (
+              <>
+                <label htmlFor="col-default">Valor por defecto</label>
+                <select id="col-default" value={form.defaultValue ?? ''} aria-invalid={errors.default ? true : undefined} onChange={(e) => set({ defaultValue: e.target.value })}>
+                  <option value="">Ninguno</option>
+                  {form.choices
+                    .split('\n')
+                    .map((c) => c.trim())
+                    .filter(Boolean)
+                    .map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                </select>
+              </>
+            ) : (
+              <>
+                <label htmlFor="col-default">Valor por defecto</label>
+                <input id="col-default" value={form.defaultValue ?? ''} autoComplete="off" inputMode={form.type === 'numero' ? 'decimal' : undefined} placeholder="Ninguno" aria-invalid={errors.default ? true : undefined} onChange={(e) => set({ defaultValue: e.target.value })} />
+              </>
+            )}
+            {errors.default && (
+              <p role="alert" className="error field-error">
+                {errors.default}
               </p>
             )}
           </div>

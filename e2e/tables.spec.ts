@@ -1,3 +1,4 @@
+import { readFile, writeFile } from 'node:fs/promises'
 import { expect, test, type Page } from '@playwright/test'
 import { createTestUser, expectNoA11yViolations, login } from './helpers'
 
@@ -173,8 +174,9 @@ test('ordenar por una columna y borrar una fila', async ({ page }) => {
   await page.getByRole('button', { name: 'De menor a mayor' }).click()
   await expect(cell(page, 'Importe', 1)).toContainText('20')
 
-  await page.getByRole('button', { name: 'Borrar fila 1' }).click()
-  await page.getByRole('button', { name: 'Borrar fila 1' }).click()
+  await page.getByRole('button', { name: 'Abrir fila 1' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Borrar fila' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Sí, borrar la fila' }).click()
   await expect(page.getByRole('row')).toHaveCount(1 + 2 + 1) // cabecera, dos filas y el pie con la suma
 })
 
@@ -297,4 +299,89 @@ test('filtros, vistas guardadas y análisis de resultados', async ({ page }) => 
   await expectNoA11yViolations(page)
   await page.setViewportSize({ width: 320, height: 700 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
+})
+
+test('ficha de una fila: editar campos, duplicar y borrar', async ({ page }) => {
+  await newTable(page, 'Ficha', /Gastos/)
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await page.getByRole('button', { name: 'Abrir fila 1' }).click()
+  const d = page.getByRole('dialog')
+  await d.getByLabel('Concepto').fill('Supermercado')
+  await d.getByLabel('Importe').fill('42,5')
+  await d.getByLabel('Importe').press('Enter')
+  await d.getByLabel('Categoría').selectOption('Comida')
+  await d.getByLabel('Importe').fill('abc')
+  await d.getByLabel('Importe').press('Enter')
+  await expect(d.getByRole('alert')).toContainText('Escribe un número')
+  await d.getByLabel('Importe').fill('42,5')
+  await d.getByLabel('Importe').press('Enter')
+  await expectNoA11yViolations(page)
+
+  await d.getByRole('button', { name: 'Duplicar fila' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(cell(page, 'Concepto', 2)).toContainText('Supermercado')
+  await expect(cell(page, 'Importe', 2)).toContainText('42,5')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 2' })).toHaveValue('Comida')
+  await expect(page.locator('tfoot')).toContainText('85,00')
+
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+  await expect(cell(page, 'Concepto', 2)).toContainText('Supermercado')
+})
+
+test('valores por defecto en las filas nuevas', async ({ page }) => {
+  await newTable(page, 'Defaults')
+  await menu(page, 'Nueva columna')
+  let d = page.getByRole('dialog')
+  await d.getByLabel('Nombre', { exact: true }).fill('Fecha')
+  await d.getByLabel('Tipo').selectOption('fecha')
+  await d.getByLabel('Poner la fecha de hoy en las filas nuevas').check()
+  await d.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByRole('button', { name: /Editar columna Fecha/ })).toBeVisible()
+
+  await menu(page, 'Nueva columna')
+  d = page.getByRole('dialog')
+  await d.getByLabel('Nombre', { exact: true }).fill('Moneda')
+  await d.getByLabel('Valor por defecto').fill('EUR')
+  await d.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByRole('button', { name: /Editar columna Moneda/ })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await expect(cell(page, 'Moneda')).toContainText('EUR')
+  await expect(page.locator('[data-cell="0-0"]')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
+})
+
+test('exportar una tabla a CSV e importarla de nuevo en otra', async ({ page }, testInfo) => {
+  await newTable(page, 'Origen', /Gastos/)
+  await page.getByRole('button', { name: 'Añadir fila' }).click()
+  await write(page, 'Concepto', 'Café, con "leche"')
+  await write(page, 'Importe', '2,5')
+  await page.getByRole('combobox', { name: 'Categoría, fila 1' }).selectOption('Comida')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 1' })).toHaveValue('Comida')
+
+  await page.getByRole('button', { name: 'Más opciones' }).click()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('menuitem', { name: 'Exportar CSV' }).click()])
+  expect(download.suggestedFilename()).toBe('origen.csv')
+  const csv = await readFile((await download.path())!, 'utf8')
+  expect(csv).toContain('Fecha,Concepto,Categoría,Importe')
+  expect(csv).toContain('"Café, con ""leche""",Comida,2.5')
+
+  // un archivo propio, con formato español, para otra tabla
+  const file = testInfo.outputPath('gastos.csv')
+  await writeFile(file, 'Concepto;Importe;Categoría;Banco\n"Cena; fuera";"1.234,50";ocio;ING\nTaxi;12;Inventada;ING\n')
+  await newTable(page, 'Destino', /Gastos/)
+  await menu(page, 'Importar CSV')
+  await page.getByLabel('Archivo CSV para importar').setInputFiles(file)
+  const d = page.getByRole('dialog')
+  await expect(d).toContainText('Se añadirán 2 filas')
+  await expect(d).toContainText('Sin coincidencia, se ignoran: Banco')
+  await expect(d).toContainText('1 valor no encaja')
+  await expectNoA11yViolations(page)
+  await d.getByRole('button', { name: 'Importar' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(cell(page, 'Concepto', 1)).toContainText('Cena; fuera')
+  await expect(cell(page, 'Importe', 1)).toContainText('1234,5')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 1' })).toHaveValue('Ocio')
+  await expect(cell(page, 'Concepto', 2)).toContainText('Taxi')
+  await expect(page.getByRole('combobox', { name: 'Categoría, fila 2' })).toHaveValue('')
 })

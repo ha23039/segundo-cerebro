@@ -13,7 +13,7 @@ interface Props {
   onSet(rowId: string, columnId: string, value: CellValue): void
   onOpenItems(rowId: string, columnId: string): void
   onEditColumn(columnId: string): void
-  onDeleteRow(rowId: string): void
+  onOpenRow(rowId: string): void
 }
 
 const sameValue = (a: CellValue, b: CellValue) => JSON.stringify(a) === JSON.stringify(b)
@@ -35,12 +35,11 @@ const typeHint = (col: TableColumn) => ({ texto: 'texto', numero: 'número', fec
  * para reemplazar, Supr para vaciar, Tab y Enter para pasar a la siguiente. Listas de opciones, fechas y casillas se
  * cambian directamente; las listas de ítems se abren en un diálogo.
  */
-export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenItems, onEditColumn, onDeleteRow }: Props) {
+export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenItems, onEditColumn, onOpenRow }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [cursor, setActive] = useState({ r: 0, c: 0 })
   const [editing, setEditing] = useState<{ r: number; c: number; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [confirming, setConfirming] = useState<string | null>(null)
   const [picker, setPicker] = useState<{ r: number; c: number } | null>(null)
   const cancelled = useRef(false)
   // Lo escrito antes de que el campo de edición esté en pantalla (teclear rápido tras Enter) no se pierde
@@ -330,20 +329,9 @@ export function Grid({ name, columns, rows, computed, disabled, onSet, onOpenIte
                   )
                 })}
                 <td className="grid-actions">
-                  {confirming === row.id ? (
-                    <span className="grid-confirm">
-                      <button type="button" className="btn btn-danger" onClick={() => (setConfirming(null), onDeleteRow(row.id))}>
-                        Borrar fila {r + 1}
-                      </button>
-                      <button type="button" className="btn" onClick={() => setConfirming(null)}>
-                        No
-                      </button>
-                    </span>
-                  ) : (
-                    <button type="button" className="btn ghost" disabled={disabled} aria-label={`Borrar fila ${r + 1}`} onClick={() => setConfirming(row.id)}>
-                      Borrar
-                    </button>
-                  )}
+                  <button type="button" className="btn ghost" aria-label={`Abrir fila ${r + 1}`} onClick={() => onOpenRow(row.id)}>
+                    Abrir
+                  </button>
                 </td>
               </tr>
             ))}

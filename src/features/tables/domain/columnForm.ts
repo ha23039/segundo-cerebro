@@ -1,3 +1,4 @@
+import { parseNumber } from './cells'
 import { formulaRefs, parseFormula } from './formula'
 import { LIMITS, type ColumnOptions, type ColumnType, type Footer, type TableColumn } from './types'
 
@@ -10,9 +11,11 @@ export interface ColumnFormInput {
   /** Vacío = los necesarios. */
   decimals: string
   footer: Footer
+  /** Valor por defecto de las filas nuevas (texto, número, opción, `hoy` o `si`). */
+  defaultValue?: string
 }
 
-export type ColumnFormErrors = Partial<Record<'name' | 'choices' | 'formula' | 'decimals', string>>
+export type ColumnFormErrors = Partial<Record<'name' | 'choices' | 'formula' | 'decimals' | 'default', string>>
 
 export type ColumnFormResult = { ok: true; value: { name: string; type: ColumnType; options: ColumnOptions } } | { ok: false; errors: ColumnFormErrors }
 
@@ -67,6 +70,26 @@ export function validateColumnForm(input: ColumnFormInput, others: readonly Tabl
           else options.formula = f
         }
       }
+    }
+  }
+
+  const dv = (input.defaultValue ?? '').trim()
+  if (dv) {
+    if (input.type === 'texto') {
+      if (dv.length > LIMITS.text) errors.default = `Máximo ${LIMITS.text} caracteres`
+      else options.default = dv
+    } else if (input.type === 'numero') {
+      const n = parseNumber(dv)
+      if (n === null) errors.default = 'Escribe un número'
+      else options.default = String(n)
+    } else if (input.type === 'fecha') {
+      if (dv === 'hoy') options.default = 'hoy'
+    } else if (input.type === 'lista') {
+      if (!options.choices?.includes(dv)) {
+        if (!errors.choices) errors.default = 'Elige una de las opciones de la lista'
+      } else options.default = dv
+    } else if (input.type === 'casilla') {
+      if (dv === 'si') options.default = 'si'
     }
   }
 

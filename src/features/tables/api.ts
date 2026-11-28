@@ -1,6 +1,6 @@
 import type { Database } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
-import { isColumnType, type CellValue, type ColumnOptions, type ColumnType, type JournalTable, type TableColumn, type TableRow } from './domain/types'
+import { isColumnType, type CellValue, type Cells, type ColumnOptions, type ColumnType, type JournalTable, type TableColumn, type TableRow } from './domain/types'
 
 type TableDbRow = Database['public']['Tables']['journal_tables']['Row']
 type ColumnDbRow = Database['public']['Tables']['journal_columns']['Row']
@@ -106,6 +106,18 @@ export async function deleteColumn(id: string): Promise<void> {
 export async function createRow(id: string, tableId: string): Promise<void> {
   const { error } = await supabase.from('journal_rows').insert({ id, table_id: tableId })
   if (error) throw error
+}
+
+/** Inserta muchas filas con sus celdas de una vez (importación), en tandas para no pasarse del tamaño de la petición. */
+export async function insertRows(tableId: string, rows: { id: string; cells: Cells }[]): Promise<void> {
+  const CHUNK = 200
+  // Todas las filas de una tanda comparten `now()`; se separan 1 ms para que conserven el orden del archivo
+  const base = Date.now()
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const part = rows.slice(i, i + CHUNK).map((r, j) => ({ id: r.id, table_id: tableId, cells: asJson(r.cells), created_at: new Date(base + i + j).toISOString() }))
+    const { error } = await supabase.from('journal_rows').insert(part)
+    if (error) throw error
+  }
 }
 
 export async function deleteRow(id: string): Promise<void> {

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from './api'
 import { renameInFormula } from './domain/formula'
-import type { CellValue, ColumnOptions, ColumnType, TableColumn, TableRow } from './domain/types'
+import type { CellValue, Cells, ColumnOptions, ColumnType, TableColumn, TableRow } from './domain/types'
 
 export function useTables() {
   return useQuery({ queryKey: ['tables', 'list'], queryFn: api.fetchTables })
@@ -55,10 +55,18 @@ export function useTableMutations(tableId: string) {
       onError: refetch,
     }),
     addRow: useMutation({
-      mutationFn: (row: TableRow) => api.createRow(row.id, tableId),
+      // La fila nace vacía y, si trae valores (duplicar, valores por defecto), se rellenan celda a celda con la misma validación del servidor
+      mutationFn: async (row: TableRow) => {
+        await api.createRow(row.id, tableId)
+        for (const [columnId, value] of Object.entries(row.cells)) await api.setCell(row.id, columnId, value)
+      },
       scope: { id: `table-cells-${tableId}` },
       onMutate: (row) => patch((d) => ({ ...d, rows: [...d.rows, row] })),
       onError: refetch,
+    }),
+    importRows: useMutation({
+      mutationFn: (rows: { id: string; cells: Cells }[]) => api.insertRows(tableId, rows),
+      onSuccess: refetch,
     }),
     deleteRow: useMutation({
       mutationFn: (id: string) => api.deleteRow(id),

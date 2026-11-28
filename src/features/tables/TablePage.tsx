@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { todayIn } from '../../lib/dates'
 import { toMessage } from '../../lib/errors'
 import { useProfile } from '../profile/useProfile'
 import { AnalysisPanel } from './AnalysisPanel'
+import { downloadFile } from '../export/download'
+import { ImportDialog } from './ImportDialog'
+import { parseCsv, planImport, tableToCsv, type ImportPlan } from './domain/csvTable'
 import { MoreMenu } from './MoreMenu'
 import { TableFilters } from './TableFilters'
 import { useTableView } from './useTableView'
@@ -12,7 +15,9 @@ import { useOnline } from '../layout/useOnline'
 import { ColumnDialog } from './ColumnDialog'
 import { compareCells } from './domain/cells'
 import { computeFormulas } from './domain/formula'
-import { LIMITS, type TableRow } from './domain/types'
+import { defaultCells, duplicateCells } from './domain/defaults'
+import { RowDialog } from './RowDialog'
+import { LIMITS, type Cells, type TableRow } from './domain/types'
 import { Grid } from './Grid'
 import { useTable, useTableMutations, useTablesMutations } from './hooks'
 import { ItemsDialog } from './ItemsDialog'
@@ -33,6 +38,10 @@ function TableView({ id }: { id: string }) {
   const [renaming, setRenaming] = useState<string | null>(null)
   const [confirmTrash, setConfirmTrash] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState<{ name: string; plan: ImportPlan } | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
 
   const data = query.data
   const columns = useMemo(() => data?.columns ?? [], [data])
@@ -58,13 +67,21 @@ function TableView({ id }: { id: string }) {
     editCol?.type === 'texto'
       ? [...new Set(rows.map((r) => r.cells[editCol.id]).filter((v): v is string => typeof v === 'string' && v.length > 0 && v.length <= LIMITS.choiceText))].slice(0, LIMITS.choices)
       : undefined
+  const openRowData = openRow ? rows.find((r) => r.id === openRow) : undefined
   const itemsCol = items ? columns.find((c) => c.id === items.columnId) : undefined
   const itemsRow = items ? rows.find((r) => r.id === items.rowId) : undefined
   const itemsValue = itemsRow && itemsCol ? itemsRow.cells[itemsCol.id] : undefined
   const mutationError = m.setCell.error ?? m.addRow.error ?? m.deleteRow.error
 
-  function addRow() {
-    const row: TableRow = { id: crypto.randomUUID(), tableId: id, cells: {}, createdAt: new Date().toISOString() }
+  function exportCsv() {
+    const slug = data!.table.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tabla'
+    downloadFile(`${slug}.csv`, tableToCsv(columns, sorted, computed), 'text/csv;charset=utf-8')
+  }
+
+  const today = todayIn(profile.data?.timezone ?? 'Europe/Madrid')
+
+  function addRow(cells: Cells = defaultCells(columns, today)) {
+    const row: TableRow = { id: crypto.randomUUID(), tableId: id, cells, createdAt: new Date().toISOString() }
     m.addRow.mutate(row)
   }
 
@@ -100,7 +117,7 @@ function TableView({ id }: { id: string }) {
       </div>
 
       <div className="table-toolbar">
-        <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={addRow}>
+        <button className="btn btn-primary" type="button" disabled={!online || columns.length === 0} onClick={() => addRow()}>
           Añadir fila
         </button>
         {columns.length > 0 && (
@@ -111,11 +128,45 @@ function TableView({ id }: { id: string }) {
         <MoreMenu
           actions={[
             { label: 'Nueva columna', disabled: !online, onSelect: () => setEditingColumn('new') },
+            { label: 'Importar CSV', disabled: !online || columns.length === 0, onSelect: () => fileInput.current?.click() },
+            { label: 'Exportar CSV', disabled: columns.length === 0, onSelect: () => exportCsv() },
             { label: 'Renombrar tabla', disabled: !online, onSelect: () => setRenaming(data.table.name) },
             { label: 'Borrar tabla', disabled: !online, danger: true, onSelect: () => setConfirmTrash(true) },
           ]}
         />
       </div>
+
+      <input
+        ref={fileInput}
+        type="file"
+        className="visually-hidden"
+        accept=".csv,text/csv,text/plain"
+        tabIndex={-1}
+        aria-label="Archivo CSV para importar"
+        onChange={async (e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (!file) return
+          setImportError(null)
+          if (file.size > 5_000_000) return setImportError('El archivo es demasiado grande (máximo 5 MB).')
+          setImporting({ name: file.name, plan: planImport(parseCsv(await file.text()), columns, rows.length) })
+        }}
+      />
+      {importError && (
+        <p role="alert" className="error">
+          {importError}
+        </p>
+      )}
+      {importing && (
+        <ImportDialog
+          fileName={importing.name}
+          plan={importing.plan}
+          busy={m.importRows.isPending}
+          error={m.importRows.error}
+          onClose={() => setImporting(null)}
+          onConfirm={() => m.importRows.mutate(importing.plan.rows.map((cells) => ({ id: crypto.randomUUID(), cells })), { onSuccess: () => setImporting(null) })}
+        />
+      )}
 
       {confirmTrash && (
         <div className="row table-danger" role="group" aria-label="Borrar tabla">
@@ -177,7 +228,7 @@ function TableView({ id }: { id: string }) {
         onSet={(rowId, columnId, value) => m.setCell.mutate({ rowId, columnId, value })}
         onOpenItems={(rowId, columnId) => setItems({ rowId, columnId })}
         onEditColumn={setEditingColumn}
-        onDeleteRow={(rowId) => m.deleteRow.mutate(rowId)}
+        onOpenRow={setOpenRow}
       />
       {columns.length > 0 && rows.length === 0 && <p className="empty">Sin filas todavía. Pulsa «Añadir fila».</p>}
 
@@ -209,6 +260,28 @@ function TableView({ id }: { id: string }) {
                 }
               : undefined
           }
+        />
+      )}
+
+      {openRowData && (
+        <RowDialog
+          key={openRowData.id}
+          row={openRowData}
+          index={sorted.findIndex((r) => r.id === openRowData.id) + 1}
+          columns={columns}
+          computed={computed}
+          disabled={!online}
+          onSet={(columnId, value) => m.setCell.mutate({ rowId: openRowData.id, columnId, value })}
+          onOpenItems={(columnId) => setItems({ rowId: openRowData.id, columnId })}
+          onDuplicate={() => {
+            addRow(duplicateCells(columns, openRowData.cells))
+            setOpenRow(null)
+          }}
+          onDelete={() => {
+            m.deleteRow.mutate(openRowData.id)
+            setOpenRow(null)
+          }}
+          onClose={() => setOpenRow(null)}
         />
       )}
 

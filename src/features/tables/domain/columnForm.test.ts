@@ -46,4 +46,13 @@ describe('validateColumnForm', () => {
     expect(validateColumnForm({ ...f, name: 'Res', formula: '{Res} + 1' }, others)).toMatchObject({ ok: false, errors: { formula: 'Una fórmula no puede usarse a sí misma' } })
     expect(validateColumnForm({ ...f, name: 'Res', formula: '{Doble} * 2' }, others).ok).toBe(true)
   })
+
+  it('valida el valor por defecto según el tipo', () => {
+    expect(validateColumnForm({ ...base, defaultValue: ' EUR ' }, others)).toMatchObject({ ok: true, value: { options: { default: 'EUR' } } })
+    expect(validateColumnForm({ ...base, type: 'numero', defaultValue: '2,5' }, others)).toMatchObject({ ok: true, value: { options: { default: '2.5' } } })
+    expect(validateColumnForm({ ...base, type: 'numero', defaultValue: 'abc' }, others)).toMatchObject({ ok: false, errors: { default: 'Escribe un número' } })
+    expect(validateColumnForm({ ...base, type: 'fecha', defaultValue: 'hoy' }, others)).toMatchObject({ ok: true, value: { options: { default: 'hoy' } } })
+    expect(validateColumnForm({ ...base, type: 'lista', choices: 'A\nB', defaultValue: 'B' }, others)).toMatchObject({ ok: true, value: { options: { choices: ['A', 'B'], default: 'B' } } })
+    expect(validateColumnForm({ ...base, type: 'lista', choices: 'A\nB', defaultValue: 'Z' }, others)).toMatchObject({ ok: false, errors: { default: 'Elige una de las opciones de la lista' } })
+  })
 })

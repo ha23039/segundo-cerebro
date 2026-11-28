@@ -23,6 +23,8 @@ export interface ColumnOptions {
   footer?: Footer
   /** Texto de la fórmula, p. ej. `{Salida} - {Entrada}`. */
   formula?: string
+  /** Valor de las filas nuevas: el texto o número, la opción, `hoy` en fechas o `si` en casillas. */
+  default?: string
 }
 
 export interface TableColumn {
